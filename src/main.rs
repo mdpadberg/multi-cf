@@ -41,6 +41,7 @@ enum EnvironmentCommands {
         #[clap(long)]
         skip_ssl_validation: bool,
     },
+    #[clap(visible_alias = "rm")]
     /// Remove an environment to the environment list
     Remove {
         name: String,
