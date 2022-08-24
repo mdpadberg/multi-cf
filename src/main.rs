@@ -1,5 +1,7 @@
 mod settings;
 
+use std::process::{self, Command};
+
 use settings::Settings;
 use clap::{Parser, Subcommand};
 
@@ -75,8 +77,24 @@ fn main() {
                 },
             }
         }
-        Some(_) => {
-
+        Some(Commands::Login { name }) => {
+            let environment = settings.get_by_environment_by_name(name);
+            if let Some(some) = environment {
+                let mut cf = Command::new("cf");
+                if some.skip_ssl_validation {
+                    cf.arg("--skip-ssl-validation");
+                }
+                if some.sso {
+                    cf.arg("--sso");
+                }
+            } else {
+                println!("could not find {:#?} in environment list {:#?}", name, settings.get_environments());
+                process::exit(1);
+            }
+            
+        }
+        Some(some) => {
+            println!("some {:#?}", some);
         }
         None => {
 

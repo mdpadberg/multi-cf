@@ -6,7 +6,7 @@ use std::{
     path::PathBuf,
 };
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Environment {
     pub name: String,
     pub url: String,
@@ -63,6 +63,10 @@ impl Settings {
         read_settings_file(&path_to_settings).ok()
     }
 
+    pub fn get_environments(&self) -> Vec<Environment> {
+        self.environments.iter().map(|f| f.clone()).collect()
+    }
+
     pub fn add(&mut self, environment: Environment) {
         self.environments.retain(|env| env.name != environment.name);
         self.environments.push(environment);
@@ -79,5 +83,12 @@ impl Settings {
 
     pub fn remove(&mut self, name: &String) {
         self.environments.retain(|env| env.name != *name);
+    }
+
+    pub fn get_by_environment_by_name(&self, name: &String) -> Option<Environment> {
+        self.environments
+            .iter()
+            .find(|env| env.name == *name)
+            .cloned()
     }
 }
