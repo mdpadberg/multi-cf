@@ -4,6 +4,7 @@ use std::process::{self, Command};
 
 use settings::Settings;
 use clap::{Parser, Subcommand};
+use dirs::data_dir;
 
 use crate::settings::Environment;
 
@@ -83,6 +84,11 @@ fn main() {
             let environment = settings.get_by_environment_by_name(name);
             if let Some(some) = environment {
                 let mut cf = Command::new("cf");
+                let mut cf_home = data_dir().expect("no data dir");
+                cf_home.push("cfe");
+                cf_home.push("homes");
+                cf_home.push(some.name);
+                cf.env("CF_HOME", cf_home);
                 cf.arg("login")
                     .arg("-a")
                     .arg(some.url);
