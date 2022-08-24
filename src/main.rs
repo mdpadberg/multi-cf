@@ -19,6 +19,7 @@ struct Cfe {
 #[derive(Subcommand, Debug)]
 enum Commands {
     /// Add, Remove, List environment (example cf-dev)
+    #[clap(visible_alias = "env")]
     Environment {
         #[clap(subcommand)]
         environmentCommands: EnvironmentCommands
@@ -82,12 +83,18 @@ fn main() {
             let environment = settings.get_by_environment_by_name(name);
             if let Some(some) = environment {
                 let mut cf = Command::new("cf");
+                cf.arg("login")
+                    .arg("-a")
+                    .arg(some.url);
+
                 if some.skip_ssl_validation {
                     cf.arg("--skip-ssl-validation");
                 }
                 if some.sso {
                     cf.arg("--sso");
                 }
+                let mut child = cf.spawn().expect("Failure in creating child process");
+                child.wait();
             } else {
                 println!("could not find {:#?} in environment list {:#?}", name, settings.get_environments());
                 process::exit(1);
