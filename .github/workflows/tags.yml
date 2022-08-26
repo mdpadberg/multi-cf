@@ -58,7 +58,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ needs.create_release.outputs }}
+        upload_url: ${{ needs.create_release.outputs.upload_url }}
         asset_path: ./target/${{ matrix.rust-target }}/release/cfe.exe
         asset_name: cfe-${{ matrix.rust-target }}
         asset_content_type: application/octet-stream
