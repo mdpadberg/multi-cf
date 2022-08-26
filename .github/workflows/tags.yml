@@ -25,7 +25,7 @@ jobs:
         prerelease: false
   release:
     name: release
-    needs: [publish_release]
+    needs: [create_release]
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
