@@ -7,8 +7,25 @@ on:
 
 jobs:
   #devide in test, build, lint, create release, upload artifacts, etc
+  create_release:
+    name: Create release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
   release:
     name: release
+    needs: [publish_release]
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -33,17 +50,7 @@ jobs:
 #      run: cargo test -- --include-ignored
     - name: Build
       run: cargo build --release --target ${{ matrix.rust-target }}
-    - name: Create Release
-      id: create_release
-      uses: softprops/action-gh-release@v1
-      if: matrix.os == 'ubuntu-latest'
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        name: Release ${{ github.ref }}
-        draft: false
-        prerelease: false
+
     - name: Upload Release Asset
       id: upload-release-asset-windows
       uses: actions/upload-release-asset@v1
@@ -51,7 +58,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }} 
+        upload_url: ${{ needs.create_release.outputs }}
         asset_path: ./target/${{ matrix.rust-target }}/release/cf-extension.exe
         asset_name: cf-extension-${{ matrix.rust-target }}
         asset_content_type: application/octet-stream
@@ -62,7 +69,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }} 
+        upload_url: ${{ needs.create_release.outputs.upload_url }}
         asset_path: ./target/${{ matrix.rust-target }}/release/cf-extension
         asset_name: cf-extension-${{ matrix.rust-target }}
         asset_content_type: application/octet-stream
