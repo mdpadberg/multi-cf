@@ -1,0 +1,67 @@
+name: tags
+
+on:
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  #devide in test, build, lint, create release, upload artifacts, etc
+  release:
+    name: release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+        - os: macos-latest
+          rust-target: x86_64-apple-darwin
+        - os: ubuntu-latest
+          rust-target: x86_64-unknown-linux-gnu
+        - os: windows-latest
+          rust-target: x86_64-pc-windows-gnu
+    steps:
+    - name: Checkout project
+      uses: actions/checkout@v2
+    - name: Install Rust with cargo
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        target: ${{ matrix.rust-target }}
+    - name: Run unit tests
+      run: cargo test --verbose
+    - name: Run integration tests
+      run: cargo test -- --include-ignored
+    - name: Build
+      run: cargo build --release --target ${{ matrix.rust-target }}
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+    - name: Upload Release Asset
+      id: upload-release-asset-windows
+      uses: actions/upload-release-asset@v1
+      if: matrix.os == 'windows-latest'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} 
+        asset_path: ./target/${{ matrix.rust-target }}/release/cli-final-test.exe
+        asset_name: cli-final-test-${{ matrix.rust-target }}
+        asset_content_type: application/octet-stream
+    - name: Upload Release Asset
+      id: upload-release-asset-macos-ubuntu
+      uses: actions/upload-release-asset@v1
+      if: matrix.os == 'macos-latest' || matrix.os == 'ubuntu-latest'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} 
+        asset_path: ./target/${{ matrix.rust-target }}/release/cli-final-test
+        asset_name: cli-final-test-${{ matrix.rust-target }}
+        asset_content_type: application/octet-stream

@@ -1,0 +1,43 @@
+name: main-and-pr
+
+on:
+  push:
+    branches: 
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - main
+
+env:
+  CARGO_TERM_COLOR: always
+  # (ugly) workaround to strip binary
+  # https://github.com/rust-lang/cargo/issues/3483#issuecomment-431209957
+  RUSTFLAGS: "-C link-arg=-s"
+
+jobs:
+  tests:
+    name: run tests
+    strategy:
+      matrix:
+        include:
+        - os: macos-latest
+          rust-target: x86_64-apple-darwin
+        - os: ubuntu-latest
+          rust-target: x86_64-unknown-linux-gnu
+        - os: windows-latest
+          rust-target: x86_64-pc-windows-gnu
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout project
+      uses: actions/checkout@v2
+    - name: Install Rust with cargo
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        target: ${{ matrix.rust-target }}
+    - name: Run unit tests
+      run: cargo test --verbose
+    - name: Run integration tests
+      run: cargo test --verbose --features integration_tests
+  
