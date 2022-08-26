@@ -29,8 +29,8 @@ jobs:
         target: ${{ matrix.rust-target }}
     - name: Run unit tests
       run: cargo test --verbose
-    - name: Run integration tests
-      run: cargo test -- --include-ignored
+#    - name: Run integration tests
+#      run: cargo test -- --include-ignored
     - name: Build
       run: cargo build --release --target ${{ matrix.rust-target }}
     - name: Create Release
