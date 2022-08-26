@@ -12,6 +12,7 @@ use std::{
     slice::SliceIndex,
 };
 
+use rayon::iter::{ParallelIterator, IntoParallelIterator};
 use clap::{Parser, Subcommand};
 use dirs::data_dir;
 use settings::Settings;
@@ -137,8 +138,8 @@ fn main() {
 
     match &cfe.command {
         Some(Commands::Environment {
-            environmentCommands,
-        }) => match environmentCommands {
+                 environmentCommands,
+             }) => match environmentCommands {
             EnvironmentCommands::Add {
                 name,
                 url,
@@ -207,7 +208,7 @@ fn main() {
                 }
             }
 
-            for env in envs.iter() {
+            envs.into_par_iter().for_each(|env| {
                 let mut cf_home = data_dir().expect("no data dir");
                 cf_home.push("cfe");
                 cf_home.push("homes");
@@ -229,7 +230,7 @@ fn main() {
                     .lines()
                     .filter_map(|line| line.ok())
                     .for_each(|line| println!("{}: {}", &env.1.color(color), line.color(color)));
-            }
+            });
         }
         None => panic!("Something went wrong, please contact the developers")
     }
