@@ -21,9 +21,9 @@ use crate::settings::Environment;
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
-#[clap(name = "cfe")]
-#[clap(bin_name = "cfe")]
-struct Cfe {
+#[clap(name = "mcf")]
+#[clap(bin_name = "mcf")]
+struct Mcf {
     #[clap(subcommand)]
     command: Option<Commands>,
 }
@@ -134,9 +134,9 @@ fn main() {
         Some(some) => some,
         None => panic!("could not find or write settings file"),
     };
-    let cfe: Cfe = Cfe::parse();
+    let mcf: Mcf = Mcf::parse();
 
-    match &cfe.command {
+    match &mcf.command {
         Some(Commands::Environment {
                  environmentCommands,
              }) => match environmentCommands {
@@ -167,7 +167,7 @@ fn main() {
             if let Some(some) = environment {
                 let mut cf = Command::new("cf");
                 let mut cf_home = data_dir().expect("no data dir");
-                cf_home.push("cfe");
+                cf_home.push("mcf");
                 cf_home.push("homes");
                 cf_home.push(some.name);
                 cf.env("CF_HOME", cf_home);
@@ -210,7 +210,7 @@ fn main() {
 
             envs.into_par_iter().for_each(|env| {
                 let mut cf_home = data_dir().expect("no data dir");
-                cf_home.push("cfe");
+                cf_home.push("mcf");
                 cf_home.push("homes");
                 cf_home.push(&env.1);
 

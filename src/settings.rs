@@ -21,7 +21,7 @@ pub struct Settings {
 
 fn path_to_settings() -> Option<PathBuf> {
     let mut path = dirs::config_dir()?;
-    path.push("cfe");
+    path.push("mcf");
     path.push("settings.yml");
     Some(path)
 }

@@ -59,8 +59,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ needs.create_release.outputs.upload_url }}
-        asset_path: ./target/${{ matrix.rust-target }}/release/cfe.exe
-        asset_name: cfe-${{ matrix.rust-target }}.exe
+        asset_path: ./target/${{ matrix.rust-target }}/release/mcf.exe
+        asset_name: mcf-${{ matrix.rust-target }}.exe
         asset_content_type: application/octet-stream
     - name: Upload Release Asset
       id: upload-release-asset-macos-ubuntu
@@ -70,6 +70,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ needs.create_release.outputs.upload_url }}
-        asset_path: ./target/${{ matrix.rust-target }}/release/cfe
-        asset_name: cfe-${{ matrix.rust-target }}
+        asset_path: ./target/${{ matrix.rust-target }}/release/mcf
+        asset_name: mcf-${{ matrix.rust-target }}
         asset_content_type: application/octet-stream
