@@ -76,7 +76,7 @@ enum EnvironmentCommands {
     List,
 }
 
-const COLORS: &'static [Color] = &[
+const COLORS: &[Color] = &[
     Red,
     Green,
     Yellow,
@@ -113,8 +113,8 @@ fn main() {
                 settings.add(Environment {
                     name: name.clone(),
                     url: url.clone(),
-                    sso: sso.clone(),
-                    skip_ssl_validation: skip_ssl_validation.clone(),
+                    sso: *sso,
+                    skip_ssl_validation: *skip_ssl_validation,
                 });
                 settings.save();
             }
@@ -156,13 +156,13 @@ fn main() {
         }
         Commands::Exec { names, command } => {
             let envs: Vec<(Option<Environment>, String)> = names
-                .split(",")
+                .split(',')
                 .map(|s| s.to_string())
                 .map(|env| (settings.get_by_environment_by_name(&env), env))
                 .collect();
 
             for env in envs.iter() {
-                if let None = env.0 {
+                if env.0.is_none() {
                     println!(
                         "could not find {:#?} in environment list {:#?}",
                         env.1,

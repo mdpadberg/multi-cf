@@ -1,5 +1,6 @@
 use anyhow::{bail, Result};
 use serde::{Deserialize, Serialize};
+use std::path::Path;
 use std::{
     fs::{self, File},
     io::Write,
@@ -26,8 +27,7 @@ fn path_to_settings() -> Option<PathBuf> {
     Some(path)
 }
 
-fn create_empty_settings_file(path_buf: &PathBuf) -> Result<()> {
-    let path = path_buf.as_path();
+fn create_empty_settings_file(path: &Path) -> Result<()> {
     let parent = match path.parent() {
         Some(some) => some,
         None => bail!(""),
@@ -37,34 +37,34 @@ fn create_empty_settings_file(path_buf: &PathBuf) -> Result<()> {
     let empty_settings = serde_yaml::to_string(&Settings {
         environments: Vec::new(),
     })?;
-    file.write(empty_settings.as_bytes())?;
+    file.write_all(empty_settings.as_bytes())?;
     Ok(())
 }
 
-fn read_settings_file(path_buf: &PathBuf) -> Result<Settings> {
-    let settings_file_as_string = fs::read_to_string(path_buf.as_path())?;
-    let settings_file: Settings = serde_yaml::from_str(&settings_file_as_string.as_str())?;
+fn read_settings_file(path: &Path) -> Result<Settings> {
+    let settings_file_as_string = fs::read_to_string(path)?;
+    let settings_file: Settings = serde_yaml::from_str(settings_file_as_string.as_str())?;
     Ok(settings_file)
 }
 
 fn write_settings_file(path_buf: &PathBuf, settings: &Settings) -> Result<()> {
     let mut file = File::create(path_buf)?;
     let settings_file_as_string = serde_yaml::to_string(&settings)?;
-    file.write(settings_file_as_string.as_bytes())?;
+    file.write_all(settings_file_as_string.as_bytes())?;
     Ok(())
 }
 
 impl Settings {
     pub fn new() -> Option<Self> {
         let path_to_settings = path_to_settings()?;
-        if path_to_settings.exists() == false {
+        if !path_to_settings.exists() {
             create_empty_settings_file(&path_to_settings).expect("aaaa")
         };
         read_settings_file(&path_to_settings).ok()
     }
 
     pub fn get_environments(&self) -> Vec<Environment> {
-        self.environments.iter().map(|f| f.clone()).collect()
+        self.environments.to_vec()
     }
 
     pub fn add(&mut self, environment: Environment) {
@@ -75,9 +75,9 @@ impl Settings {
     pub fn save(&self) -> bool {
         if let Some(some) = path_to_settings() {
             write_settings_file(&some, self).expect("Could not save file");
-            return true;
+            true
         } else {
-            return false;
+            false
         }
     }
 
