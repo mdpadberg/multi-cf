@@ -2,7 +2,7 @@ use anyhow::{bail, Result};
 use serde::{Deserialize, Serialize};
 use std::{
     fs::{self, File},
-    io::{Write},
+    io::Write,
     path::PathBuf,
 };
 

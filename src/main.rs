@@ -6,13 +6,13 @@ use std::{
 
 use clap::{CommandFactory, Parser, Subcommand};
 use clap_complete::{generate, Generator, Shell};
+use colored::Color::{
+    Blue, BrightBlue, BrightCyan, BrightGreen, BrightMagenta, BrightRed, BrightWhite, BrightYellow,
+    Cyan, Green, Magenta, Red, White, Yellow,
+};
 use colored::*;
 use dirs::data_dir;
-use rand::{
-    distributions::{Distribution, Standard},
-    Rng,
-};
-use rayon::iter::{IntoParallelIterator, ParallelIterator};
+use rayon::iter::{IntoParallelIterator, ParallelIterator, IndexedParallelIterator};
 
 use settings::Settings;
 
@@ -76,8 +76,7 @@ enum EnvironmentCommands {
     List,
 }
 
-#[derive(Debug)]
-enum RandomColor {
+const COLORS: &'static [Color] = &[
     Red,
     Green,
     Yellow,
@@ -92,49 +91,7 @@ enum RandomColor {
     BrightMagenta,
     BrightCyan,
     BrightWhite,
-}
-
-impl Distribution<RandomColor> for Standard {
-    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> RandomColor {
-        match rng.gen_range(0..=12) {
-            0 => RandomColor::Red,
-            1 => RandomColor::Green,
-            2 => RandomColor::Yellow,
-            3 => RandomColor::Blue,
-            4 => RandomColor::Magenta,
-            5 => RandomColor::Cyan,
-            6 => RandomColor::White,
-            7 => RandomColor::BrightRed,
-            8 => RandomColor::BrightGreen,
-            9 => RandomColor::BrightYellow,
-            10 => RandomColor::BrightBlue,
-            11 => RandomColor::BrightMagenta,
-            12 => RandomColor::BrightCyan,
-            _ => RandomColor::BrightWhite,
-        }
-    }
-}
-
-impl RandomColor {
-    pub fn to_colored_crate(&self) -> Color {
-        match self {
-            RandomColor::Red => Color::Red,
-            RandomColor::Green => Color::Green,
-            RandomColor::Yellow => Color::Yellow,
-            RandomColor::Blue => Color::Blue,
-            RandomColor::Magenta => Color::Magenta,
-            RandomColor::Cyan => Color::Cyan,
-            RandomColor::White => Color::White,
-            RandomColor::BrightRed => Color::BrightRed,
-            RandomColor::BrightGreen => Color::BrightGreen,
-            RandomColor::BrightYellow => Color::BrightYellow,
-            RandomColor::BrightBlue => Color::BrightBlue,
-            RandomColor::BrightMagenta => Color::BrightMagenta,
-            RandomColor::BrightCyan => Color::BrightCyan,
-            RandomColor::BrightWhite => Color::BrightWhite,
-        }
-    }
-}
+];
 
 fn main() {
     let mut settings = match Settings::new() {
@@ -145,8 +102,8 @@ fn main() {
 
     match &mcf.command {
         Some(Commands::Environment {
-                 environment_commands,
-             }) => match environment_commands {
+            environment_commands,
+        }) => match environment_commands {
             EnvironmentCommands::Add {
                 name,
                 url,
@@ -215,7 +172,8 @@ fn main() {
                 }
             }
 
-            envs.into_par_iter().for_each(|env| {
+            let colors: Vec<&Color> = COLORS.iter().cycle().take(envs.len()).collect();
+            envs.into_par_iter().zip(colors).for_each(|(env, color)| {
                 let mut cf_home = data_dir().expect("no data dir");
                 cf_home.push("mcf");
                 cf_home.push("homes");
@@ -230,13 +188,10 @@ fn main() {
                     .stdout
                     .expect("Could not capture standard output.");
 
-                let random_color: RandomColor = rand::random();
-                let color = random_color.to_colored_crate();
-
                 BufReader::new(stdout)
                     .lines()
                     .filter_map(|line| line.ok())
-                    .for_each(|line| println!("{}: {}", &env.1.color(color), line.color(color)));
+                    .for_each(|line| println!("{}: {}", &env.1.color(*color), line.color(*color)));
             });
         }
         Some(Commands::Completion { shell }) => {
