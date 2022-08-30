@@ -12,7 +12,7 @@ use colored::Color::{
 };
 use colored::*;
 use dirs::data_dir;
-use rayon::iter::{IntoParallelIterator, ParallelIterator, IndexedParallelIterator};
+use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterator};
 
 use settings::Settings;
 
@@ -172,27 +172,45 @@ fn main() {
                 }
             }
 
+            let max_chars = envs
+                .iter()
+                .map(|(_env, env_name)| env_name.len())
+                .max()
+                .expect("environment name should have length");
+
             let colors: Vec<&Color> = COLORS.iter().cycle().take(envs.len()).collect();
-            envs.into_par_iter().zip(colors).for_each(|(env, color)| {
-                let mut cf_home = data_dir().expect("no data dir");
-                cf_home.push("mcf");
-                cf_home.push("homes");
-                cf_home.push(&env.1);
+            envs.into_par_iter()
+                .zip(colors)
+                .for_each(|((_env, env_name), color)| {
+                    let mut cf_home = data_dir().expect("no data dir");
+                    cf_home.push("mcf");
+                    cf_home.push("homes");
+                    cf_home.push(&env_name);
 
-                let stdout = process::Command::new("cf")
-                    .env("CF_HOME", cf_home)
-                    .args(command)
-                    .stdout(Stdio::piped())
-                    .spawn()
-                    .expect("Could not spawn child process.")
-                    .stdout
-                    .expect("Could not capture standard output.");
+                    let stdout = process::Command::new("cf")
+                        .env("CF_HOME", cf_home)
+                        .args(command)
+                        .stdout(Stdio::piped())
+                        .spawn()
+                        .expect("Could not spawn child process.")
+                        .stdout
+                        .expect("Could not capture standard output.");
 
-                BufReader::new(stdout)
-                    .lines()
-                    .filter_map(|line| line.ok())
-                    .for_each(|line| println!("{}: {}", &env.1.color(*color), line.color(*color)));
-            });
+                    let whitespace_length = max_chars - env_name.len();
+                    let whitespace = (0..=whitespace_length).map(|_| " ").collect::<String>();
+
+                    BufReader::new(stdout)
+                        .lines()
+                        .filter_map(|line| line.ok())
+                        .for_each(|line| {
+                            println!(
+                                "{}{}| {}",
+                                &env_name.color(*color),
+                                whitespace,
+                                line.color(*color)
+                            )
+                        });
+                });
         }
         Commands::Completion { shell } => {
             let mut cmd = Mcf::command();
