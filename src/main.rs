@@ -3,18 +3,20 @@ mod settings;
 use colored::*;
 use rand::{
     distributions::{Distribution, Standard},
-    Rng, random,
+    random, Rng,
 };
 use std::{
+    io,
     io::{BufRead, BufReader},
     ops::RangeBounds,
-    process::{self, Command, Stdio},
+    process::{self, Stdio},
     slice::SliceIndex,
 };
 
-use rayon::iter::{ParallelIterator, IntoParallelIterator};
-use clap::{Parser, Subcommand};
+use clap::{CommandFactory, Parser, Subcommand};
+use clap_complete::{generate, Generator, Shell};
 use dirs::data_dir;
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use settings::Settings;
 
 use crate::settings::Environment;
@@ -49,6 +51,11 @@ enum Commands {
         names: String,
         /// Command you want to execute (example "logs your-application --recent")
         command: Vec<String>,
+    },
+    /// Generate shell autocompletion files
+    Completion {
+        #[clap(arg_enum, value_parser)]
+        shell: Shell,
     },
 }
 
@@ -138,8 +145,8 @@ fn main() {
 
     match &mcf.command {
         Some(Commands::Environment {
-                 environmentCommands,
-             }) => match environmentCommands {
+            environmentCommands,
+        }) => match environmentCommands {
             EnvironmentCommands::Add {
                 name,
                 url,
@@ -165,7 +172,7 @@ fn main() {
         Some(Commands::Login { name }) => {
             let environment = settings.get_by_environment_by_name(name);
             if let Some(some) = environment {
-                let mut cf = Command::new("cf");
+                let mut cf = process::Command::new("cf");
                 let mut cf_home = data_dir().expect("no data dir");
                 cf_home.push("mcf");
                 cf_home.push("homes");
@@ -214,7 +221,7 @@ fn main() {
                 cf_home.push("homes");
                 cf_home.push(&env.1);
 
-                let stdout = Command::new("cf")
+                let stdout = process::Command::new("cf")
                     .env("CF_HOME", cf_home)
                     .args(command)
                     .stdout(Stdio::piped())
@@ -232,6 +239,15 @@ fn main() {
                     .for_each(|line| println!("{}: {}", &env.1.color(color), line.color(color)));
             });
         }
-        None => panic!("Something went wrong, please contact the developers")
+        Some(Commands::Completion { shell }) => {
+            let mut cmd = Mcf::command();
+            eprintln!("Generating completion file for {:?}...", shell);
+            print_completions(shell.clone(), &mut cmd);
+        }
+        None => panic!("Something went wrong, please contact the developers"),
     }
+}
+
+fn print_completions<G: Generator>(gen: G, cmd: &mut clap::builder::Command) {
+    generate(gen, cmd, cmd.get_name().to_string(), &mut io::stdout());
 }
