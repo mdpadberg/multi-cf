@@ -26,7 +26,7 @@ mod settings;
 #[clap(bin_name = "mcf")]
 struct Mcf {
     #[clap(subcommand)]
-    command: Option<Commands>,
+    command: Commands,
 }
 
 #[derive(Subcommand, Debug)]
@@ -37,13 +37,13 @@ enum Commands {
         #[clap(subcommand)]
         environment_commands: EnvironmentCommands,
     },
-    /// Login to one of the cloud foundry environments
+    /// Login to one of the Cloud Foundry environments
     #[clap(visible_alias = "l")]
     Login {
         /// Name of the environment (example "cf-dev")
         name: String,
     },
-    /// Execute command on cloud foundry environment
+    /// Execute command on Cloud Foundry environment
     #[clap(visible_alias = "e", trailing_var_arg = true)]
     Exec {
         /// Names of the environments (example "cf-dev,cf-prod")
@@ -101,9 +101,9 @@ fn main() {
     let mcf: Mcf = Mcf::parse();
 
     match &mcf.command {
-        Some(Commands::Environment {
+        Commands::Environment {
             environment_commands,
-        }) => match environment_commands {
+        } => match environment_commands {
             EnvironmentCommands::Add {
                 name,
                 url,
@@ -126,7 +126,7 @@ fn main() {
                 println!("{:#?}", settings)
             }
         },
-        Some(Commands::Login { name }) => {
+        Commands::Login { name } => {
             let environment = settings.get_by_environment_by_name(name);
             if let Some(some) = environment {
                 let mut cf = process::Command::new("cf");
@@ -154,7 +154,7 @@ fn main() {
                 process::exit(1);
             }
         }
-        Some(Commands::Exec { names, command }) => {
+        Commands::Exec { names, command } => {
             let envs: Vec<(Option<Environment>, String)> = names
                 .split(",")
                 .map(|s| s.to_string())
@@ -194,12 +194,11 @@ fn main() {
                     .for_each(|line| println!("{}: {}", &env.1.color(*color), line.color(*color)));
             });
         }
-        Some(Commands::Completion { shell }) => {
+        Commands::Completion { shell } => {
             let mut cmd = Mcf::command();
             eprintln!("Generating completion file for {:?}...", shell);
             print_completions(*shell, &mut cmd);
         }
-        None => panic!("Something went wrong, please contact the developers"),
     }
 }
 
