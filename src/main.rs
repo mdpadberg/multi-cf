@@ -1,25 +1,24 @@
-mod settings;
-
-use colored::*;
-use rand::{
-    distributions::{Distribution, Standard},
-    random, Rng,
-};
 use std::{
     io,
     io::{BufRead, BufReader},
-    ops::RangeBounds,
     process::{self, Stdio},
-    slice::SliceIndex,
 };
 
 use clap::{CommandFactory, Parser, Subcommand};
 use clap_complete::{generate, Generator, Shell};
+use colored::*;
 use dirs::data_dir;
+use rand::{
+    distributions::{Distribution, Standard},
+    Rng,
+};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
+
 use settings::Settings;
 
 use crate::settings::Environment;
+
+mod settings;
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -36,7 +35,7 @@ enum Commands {
     #[clap(visible_alias = "env")]
     Environment {
         #[clap(subcommand)]
-        environmentCommands: EnvironmentCommands,
+        environment_commands: EnvironmentCommands,
     },
     /// Login to one of the cloud foundry environments
     #[clap(visible_alias = "l")]
@@ -110,6 +109,7 @@ impl Distribution<RandomColor> for Standard {
             9 => RandomColor::BrightYellow,
             10 => RandomColor::BrightBlue,
             11 => RandomColor::BrightMagenta,
+            12 => RandomColor::BrightCyan,
             _ => RandomColor::BrightWhite,
         }
     }
@@ -145,8 +145,8 @@ fn main() {
 
     match &mcf.command {
         Some(Commands::Environment {
-            environmentCommands,
-        }) => match environmentCommands {
+                 environment_commands,
+             }) => match environment_commands {
             EnvironmentCommands::Add {
                 name,
                 url,
@@ -187,7 +187,7 @@ fn main() {
                     cf.arg("--sso");
                 }
                 let mut child = cf.spawn().expect("Failure in creating child process");
-                child.wait();
+                let _ = child.wait();
             } else {
                 println!(
                     "could not find {:#?} in environment list {:#?}",
@@ -242,7 +242,7 @@ fn main() {
         Some(Commands::Completion { shell }) => {
             let mut cmd = Mcf::command();
             eprintln!("Generating completion file for {:?}...", shell);
-            print_completions(shell.clone(), &mut cmd);
+            print_completions(*shell, &mut cmd);
         }
         None => panic!("Something went wrong, please contact the developers"),
     }

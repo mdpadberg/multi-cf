@@ -1,8 +1,8 @@
-use anyhow::{bail, Error, Result};
+use anyhow::{bail, Result};
 use serde::{Deserialize, Serialize};
 use std::{
     fs::{self, File},
-    io::{self, Write},
+    io::{Write},
     path::PathBuf,
 };
 
@@ -74,7 +74,7 @@ impl Settings {
 
     pub fn save(&self) -> bool {
         if let Some(some) = path_to_settings() {
-            write_settings_file(&some, self);
+            write_settings_file(&some, self).expect("Could not save file");
             return true;
         } else {
             return false;
