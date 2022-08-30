@@ -57,11 +57,13 @@ jobs:
       run: |
         if [ "${{ matrix.os }}" = "windows-latest" ]; then
           archive_name="mcf-${{ env.RELEASE_VERSION }}${{ matrix.rust-target }}.zip"
-          7z a "$archive_name" "target/${{ matrix.rust-target }}/release/mcf.exe"
+          cd target/${{ matrix.rust-target }}/release/
+          7z a "$archive_name" "mcf.exe"
           echo "ASSET=$archive_name" >> $GITHUB_ENV
         else
           archive_name="mcf-${{ env.RELEASE_VERSION }}${{ matrix.rust-target }}.tar.gz"
-          tar czf "$archive_name" "target/${{ matrix.rust-target }}/release/mcf"
+          cd target/${{ matrix.rust-target }}/release/
+          tar czf "$archive_name" "mcf"
           echo "ASSET=$archive_name" >> $GITHUB_ENV
         fi
     - name: Upload release archive
