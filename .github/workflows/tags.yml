@@ -84,6 +84,18 @@ jobs:
         asset_path: ${{ env.ASSET }}
         asset_name: ${{ env.ASSET }}
         asset_content_type: application/octet-stream
+  push_version_bump:
+    name: Push version bump
+    needs: [build_release]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Set RELEASE_VERSION
+      shell: bash
+      run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+    - name: Checkout project
+      uses: actions/checkout@v3
+      with:
+        ref: 'main'
     - name: Push version bump
       run: |
         git config --global user.name 'Github tags action'
@@ -91,7 +103,6 @@ jobs:
         git add Cargo.toml
         git commit -m "version bump to ${{ env.RELEASE_VERSION }}"
         git push 
-
   trigger_tap:
     name: Trigger homebrew-tap
     needs: [build_release]
