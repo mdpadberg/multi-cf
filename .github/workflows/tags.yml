@@ -23,8 +23,8 @@ jobs:
         release_name: Release ${{ github.ref }}
         draft: false
         prerelease: false
-  release:
-    name: release
+  build_release:
+    name: Build release
     needs: [create_release]
     runs-on: ${{ matrix.os }}
     strategy:
@@ -78,6 +78,11 @@ jobs:
         asset_path: ${{ env.ASSET }}
         asset_name: ${{ env.ASSET }}
         asset_content_type: application/octet-stream
+  trigger_tap:
+    name: Trigger homebrew-tap
+    needs: [build_release]
+    runs-on: ubuntu-latest
+    steps:
     - uses: actions/github-script@v6
       with:
         github-token: ${{ secrets.PAT_TOKEN }}
