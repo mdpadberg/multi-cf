@@ -53,12 +53,14 @@ jobs:
       run: cargo test --verbose
 #    - name: Run integration tests
 #      run: cargo test -- --include-ignored
-    - name: Build
+    - name: Version bump
       shell: bash
       run: |
         cargo install cargo-edit
         cargo set-version ${{ env.RELEASE_VERSION }}
-        cargo build --release --target ${{ matrix.rust-target }}
+    - name: Build
+      shell: bash
+      run: cargo build --release --target ${{ matrix.rust-target }}
     - name: Build archive
       shell: bash
       run: |
@@ -82,6 +84,14 @@ jobs:
         asset_path: ${{ env.ASSET }}
         asset_name: ${{ env.ASSET }}
         asset_content_type: application/octet-stream
+    - name: Push version bump
+      run: |
+        git config --global user.name 'Github tags action'
+        git config --global user.email '43384430+mdpadberg@users.noreply.github.com'
+        git add Cargo.toml
+        git commit -m "version bump to ${{ env.RELEASE_VERSION }}"
+        git push 
+
   trigger_tap:
     name: Trigger homebrew-tap
     needs: [build_release]
