@@ -39,6 +39,9 @@ jobs:
         - os: windows-latest
           rust-target: x86_64-pc-windows-gnu
     steps:
+    - name: Set RELEASE_VERSION
+      shell: bash
+      run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
     - name: Checkout project
       uses: actions/checkout@v2
     - name: Install Rust with cargo
@@ -51,10 +54,11 @@ jobs:
 #    - name: Run integration tests
 #      run: cargo test -- --include-ignored
     - name: Build
-      run: cargo build --release --target ${{ matrix.rust-target }}
-    - name: Set RELEASE_VERSION
       shell: bash
-      run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      run: |
+        cargo install cargo-edit
+        cargo set-version ${{ env.RELEASE_VERSION }}
+        cargo build --release --target ${{ matrix.rust-target }}
     - name: Build archive
       shell: bash
       run: |
