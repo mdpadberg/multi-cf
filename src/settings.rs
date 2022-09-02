@@ -6,8 +6,9 @@ use std::{
     io::Write,
     path::PathBuf,
 };
+use tabled::Tabled;
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, Tabled)]
 pub struct Environment {
     pub name: String,
     pub url: String,

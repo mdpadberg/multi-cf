@@ -13,6 +13,7 @@ use colored::Color::{
 use colored::*;
 use dirs::data_dir;
 use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterator};
+use tabled::Table;
 
 use settings::Settings;
 
@@ -123,7 +124,10 @@ fn main() {
                 settings.save();
             }
             EnvironmentCommands::List => {
-                println!("{:#?}", settings)
+                let environments = Table::new(settings.get_environments())
+                    .with(tabled::Style::markdown())
+                    .to_string();
+                print!("{}", environments)
             }
         },
         Commands::Login { name } => {
