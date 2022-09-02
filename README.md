@@ -55,16 +55,9 @@ Add an environment to the cli:
 List available environment:
 ```console
 % mcf environment list
-Settings {
-    environments: [
-        Environment {
-            name: "YOUR_ALIAS",
-            url: "http://localhost",
-            sso: true,
-            skip_ssl_validation: true,
-        },
-    ],
-}
+| name          | url                  | sso  | skip_ssl_validation |
+|---------------|----------------------|------|---------------------|
+| YOUR_ALIAS    | http://localhost     | true | true                |
 ```
 
 ### Subcommand: Login
