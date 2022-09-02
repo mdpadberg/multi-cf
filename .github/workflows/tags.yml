@@ -78,3 +78,13 @@ jobs:
         asset_path: ${{ env.ASSET }}
         asset_name: ${{ env.ASSET }}
         asset_content_type: application/octet-stream
+    - uses: actions/github-script@v6
+      with:
+        github-token: ${{ secrets.PAT_TOKEN }}
+        script: |
+          await github.rest.actions.createWorkflowDispatch({
+            owner: 'mdpadberg',
+            repo: 'homebrew-tap',
+            workflow_id: 'create-formula.yml',
+            ref: 'main'
+          })
