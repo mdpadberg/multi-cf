@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use tabled::Tabled;
 
-#[derive(Debug, Deserialize, Serialize, Clone, Tabled)]
+#[derive(Debug, Deserialize, Serialize, Clone, Tabled, PartialEq, Eq)]
 pub struct Environment {
     pub name: String,
     pub url: String,
