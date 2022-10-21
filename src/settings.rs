@@ -39,6 +39,13 @@ impl Settings {
             bail!("system not supported")
         }
     }
+
+    pub fn get_environment_by_name(&self, name: &String) -> Option<Environment> {
+        self.environments
+            .iter()
+            .find(|env| env.name == *name)
+            .cloned()
+    }
 }
 
 fn path_to_settings_file(override_path: Option<&PathBuf>) -> Result<PathBuf> {

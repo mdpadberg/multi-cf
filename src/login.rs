@@ -5,7 +5,7 @@ use anyhow::{bail, Result};
 
 pub fn to_cf(settings: &Settings, override_path: Option<&PathBuf>, name: &String) -> Result<()> {
     if let Some(some) = settings.environments.iter().find(|env| &env.name == name) {
-        let mut cf: Command = cf::command(override_path, &some.name);
+        let mut cf: Command = cf::cf_command(override_path, &some.name);
         cf.arg("login").arg("-a").arg(&some.url);
         if some.skip_ssl_validation {
             cf.arg("--skip-ssl-validation");
