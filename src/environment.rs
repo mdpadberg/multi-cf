@@ -30,6 +30,30 @@ pub enum EnvironmentCommands {
     List,
 }
 
+pub fn match_environment(
+    settings: &Settings,
+    override_path: Option<&PathBuf>,
+    environment_commands: &EnvironmentCommands,
+) -> Result<()> {
+    match environment_commands {
+        EnvironmentCommands::Add {
+            name,
+            url,
+            sso,
+            skip_ssl_validation,
+        } => add(
+            &settings,
+            override_path,
+            name,
+            url,
+            sso,
+            skip_ssl_validation,
+        ),
+        EnvironmentCommands::Remove { name } => remove(&settings, override_path, name),
+        EnvironmentCommands::List => list(&settings),
+    }
+}
+
 pub fn add(
     settings: &Settings,
     override_path: Option<&PathBuf>,

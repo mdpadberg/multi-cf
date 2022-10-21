@@ -1,4 +1,4 @@
-use crate::{environment, settings::Settings, subcommands::Subcommands, login};
+use crate::{environment, login, settings::Settings, subcommands::Subcommands};
 use anyhow::Result;
 use clap::Parser;
 use std::path::PathBuf;
@@ -22,25 +22,9 @@ pub fn parse() -> Result<()> {
     match &mcf.command {
         Subcommands::Environment {
             environment_commands,
-        } => match environment_commands {
-            crate::environment::EnvironmentCommands::Add {
-                name,
-                url,
-                sso,
-                skip_ssl_validation,
-            } => environment::add(
-                &settings,
-                override_path.as_ref(),
-                name,
-                url,
-                sso,
-                skip_ssl_validation,
-            ),
-            crate::environment::EnvironmentCommands::Remove { name } => {
-                environment::remove(&settings, override_path.as_ref(), name)
-            }
-            crate::environment::EnvironmentCommands::List => environment::list(&settings),
-        },
+        } => {
+            environment::match_environment(&settings, override_path.as_ref(), environment_commands)
+        }
         Subcommands::Login { name } => login::to_cf(&settings, override_path.as_ref(), name),
         Subcommands::Exec { names, command } => todo!(),
         Subcommands::Completion { shell } => todo!(),
