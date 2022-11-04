@@ -44,10 +44,8 @@ fn add_environment() -> Result<(), Box<dyn std::error::Error>> {
         .assert()
         .success();
 
-    let fixture_path = get_fixture("expected-add-environment");
-
     let result = get_settings_yml(&dir.into_path());
-    let expected = get_settings_yml(&fixture_path);
+    let expected = include_str!("fixtures/expected-add-environment/settings.yml");
 
     assert_eq!(result, expected);
     Ok(())
@@ -68,10 +66,8 @@ fn remove_environment() -> Result<(), Box<dyn std::error::Error>> {
         .assert()
         .success();
 
-    let fixture_path = get_fixture("expected-remove-environment");
-
     let result = get_settings_yml(&dir.into_path());
-    let expected = get_settings_yml(&fixture_path);
+    let expected = include_str!("fixtures/expected-remove-environment/settings.yml");
 
     assert_eq!(result, expected);
     Ok(())
