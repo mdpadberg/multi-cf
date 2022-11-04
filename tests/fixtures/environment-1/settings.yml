@@ -1,0 +1,9 @@
+environments:
+  - name: environment1
+    url: https://env1.example.com
+    sso: false
+    skip_ssl_validation: false
+  - name: environment2
+    url: https://env2.example.com
+    sso: false
+    skip_ssl_validation: false

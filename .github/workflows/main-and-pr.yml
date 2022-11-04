@@ -29,6 +29,12 @@ jobs:
           rust-target: x86_64-pc-windows-gnu
     runs-on: ${{ matrix.os }}
     steps:
+    - name: Set autocrlf
+      shell: bash
+      run: |
+        if [ "${{ matrix.os }}" = "windows-latest" ]; then
+          git config --global core.autocrlf false
+        fi
     - name: Checkout project
       uses: actions/checkout@v2
     - name: Install Rust with cargo
@@ -38,6 +44,5 @@ jobs:
         target: ${{ matrix.rust-target }}
     - name: Run unit tests
       run: cargo test --verbose
-#    - name: Run integration tests
-#      run: cargo test --verbose --features integration_tests
-#
+    - name: Run integration tests
+      run: cargo test --features integration_tests
