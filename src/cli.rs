@@ -12,8 +12,13 @@ struct Mcf {
     #[clap(subcommand)]
     command: Subcommands,
 
+    /// Overwrite mcf config path
     #[clap(long, global = true)]
     override_path: Option<String>,
+
+    /// Overwrite binary name for cloudfoundry cli (for example: "cf8")
+    #[clap(long, default_value="cf", global = true)]
+    cf_binary_name: String,
 }
 
 pub fn parse() -> Result<()> {
