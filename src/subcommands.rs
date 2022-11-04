@@ -1,5 +1,5 @@
-use clap_complete::Shell;
 use crate::environment::EnvironmentCommands;
+use clap_complete::Shell;
 
 #[derive(clap::Subcommand, Debug)]
 pub enum Subcommands {

@@ -1,10 +1,10 @@
-mod environment;
-mod settings;
-mod cli;
-mod subcommands;
-mod login;
 mod cf;
+mod cli;
+mod environment;
 mod exec;
+mod login;
+mod settings;
+mod subcommands;
 
 #[macro_use]
 extern crate log;

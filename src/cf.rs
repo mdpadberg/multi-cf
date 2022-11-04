@@ -4,8 +4,12 @@ use std::{
     process::{self, Command, Stdio},
 };
 
-pub fn cf_command(override_path: Option<&PathBuf>, name: &String) -> Command {
-    let mut cf: Command = process::Command::new("cf");
+pub fn cf_command(
+    cf_binary_name: &String,
+    override_path: Option<&PathBuf>,
+    name: &String,
+) -> Command {
+    let mut cf: Command = Command::new(cf_binary_name);
     let mut cf_home: PathBuf = if override_path.is_some() {
         override_path.unwrap().clone()
     } else {
@@ -19,11 +23,12 @@ pub fn cf_command(override_path: Option<&PathBuf>, name: &String) -> Command {
 }
 
 pub fn exec(
+    cf_binary_name: &String,
     override_path: Option<&PathBuf>,
     env_name: &String,
     command: &Vec<String>,
 ) -> process::ChildStdout {
-    cf_command(override_path, env_name)
+    cf_command(cf_binary_name, override_path, env_name)
         .args(command)
         .stdout(Stdio::piped())
         .spawn()

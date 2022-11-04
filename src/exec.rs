@@ -9,6 +9,7 @@ use std::{
 
 pub fn cf_command(
     settings: &Settings,
+    cf_binary_name: String,
     override_path: Option<&PathBuf>,
     names: &String,
     command: &Vec<String>,
@@ -38,7 +39,7 @@ pub fn cf_command(
     input_enviroments
         .into_par_iter()
         .for_each(|(_env, env_name)| {
-            let stdout = cf::exec(override_path, &env_name, command);
+            let stdout = cf::exec(&cf_binary_name, override_path, &env_name, command);
             let whitespace_length = max_chars - env_name.len();
             let whitespace = (0..=whitespace_length).map(|_| " ").collect::<String>();
 
