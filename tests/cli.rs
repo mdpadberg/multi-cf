@@ -8,19 +8,6 @@ use tempfile::tempdir;
 const EXEC_TWO_ENVIRONMENTS_PART_1: &str = "environment1 | scale your-app -i 3";
 const EXEC_TWO_ENVIRONMENTS_PART_2: &str = "environment2 | scale your-app -i 3";
 const LOGIN: &str = "login -a https://env1.example.com";
-const EXPECTED_ADD_ENVIRONMENT: &str = "environments:
-- name: environment2
-  url: https://environment2.example.com
-  sso: false
-  skip_ssl_validation: false
-";
-
-const EXPECTED_REMOVE_ENVIRONMENT: &str = "environments:
-- name: environment2
-  url: https://env2.example.com
-  sso: false
-  skip_ssl_validation: false
-";
 
 #[test]
 fn list_environments() -> Result<(), Box<dyn std::error::Error>> {
@@ -57,9 +44,12 @@ fn add_environment() -> Result<(), Box<dyn std::error::Error>> {
         .assert()
         .success();
 
-    let result = get_settings_yml(&dir.into_path());
+    let fixture_path = get_fixture("expected-add-environment");
 
-    assert_eq!(result, EXPECTED_ADD_ENVIRONMENT);
+    let result = get_settings_yml(&dir.into_path());
+    let expected = get_settings_yml(&fixture_path);
+
+    assert_eq!(result, expected);
     Ok(())
 }
 
@@ -78,9 +68,12 @@ fn remove_environment() -> Result<(), Box<dyn std::error::Error>> {
         .assert()
         .success();
 
-    let result = get_settings_yml(&dir.into_path());
+    let fixture_path = get_fixture("expected-remove-environment");
 
-    assert_eq!(result, EXPECTED_REMOVE_ENVIRONMENT);
+    let result = get_settings_yml(&dir.into_path());
+    let expected = get_settings_yml(&fixture_path);
+
+    assert_eq!(result, expected);
     Ok(())
 }
 
