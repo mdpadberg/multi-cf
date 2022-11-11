@@ -1,16 +1,15 @@
 use crate::{cf, environment::Environment, settings::Settings};
 use anyhow::Result;
 use rayon::prelude::{IntoParallelIterator, ParallelIterator};
+use std::process::ChildStdout;
 use std::{
     io::{BufRead, BufReader},
-    path::PathBuf,
     process,
 };
 
 pub fn cf_command(
     settings: &Settings,
     cf_binary_name: String,
-    override_path: Option<&PathBuf>,
     names: &String,
     command: &Vec<String>,
 ) -> Result<()> {
@@ -38,8 +37,8 @@ pub fn cf_command(
 
     input_enviroments
         .into_par_iter()
-        .for_each(|(_env, env_name)| {
-            let stdout = cf::exec(&cf_binary_name, override_path, &env_name, command);
+        .try_for_each(|(_env, env_name)| -> Result<()> {
+            let stdout: ChildStdout = cf::exec(&cf_binary_name, &env_name, command)?;
             let whitespace_length = max_chars - env_name.len();
             let whitespace = (0..=whitespace_length).map(|_| " ").collect::<String>();
 
@@ -47,7 +46,8 @@ pub fn cf_command(
                 .lines()
                 .filter_map(|line| line.ok())
                 .for_each(|line| println!("{}{}| {}", &env_name, whitespace, line));
-        });
+            Ok(())
+        })?;
 
     Ok(())
 }

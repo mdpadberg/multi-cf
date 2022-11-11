@@ -31,16 +31,10 @@ pub fn parse() -> Result<()> {
         } => {
             environment::match_environment(&settings, override_path.as_ref(), environment_commands)
         }
-        Subcommands::Login { name } => {
-            login::to_cf(&settings, mcf.cf_binary_name, override_path.as_ref(), name)
+        Subcommands::Login { name } => login::to_cf(&settings, mcf.cf_binary_name, name),
+        Subcommands::Exec { names, command } => {
+            exec::cf_command(&settings, mcf.cf_binary_name, names, command)
         }
-        Subcommands::Exec { names, command } => exec::cf_command(
-            &settings,
-            mcf.cf_binary_name,
-            override_path.as_ref(),
-            names,
-            command,
-        ),
         Subcommands::Completion { shell } => {
             let mut cmd = Mcf::command();
             eprintln!("Generating completion file for {:?}...", shell);
