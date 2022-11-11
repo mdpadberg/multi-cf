@@ -1,6 +1,7 @@
 use anyhow::{Context, Result};
 use dirs::data_dir;
 use std::os::unix::fs;
+use std::path::Path;
 use std::{
     path::PathBuf,
     process::{self, Command, Stdio},
@@ -25,22 +26,33 @@ fn get_cf_home(name: &String) -> PathBuf {
 fn prepare_plugins(name: &String) -> Result<()> {
     let source = &mut dirs::home_dir().context("No home dir")?;
     source.push(".cf/plugins");
-    let mut destination = get_cf_home(name);
-    destination.push(".cf/plugins");
+    let cf_dir = get_cf_home(name).join(".cf");
+    let destination = cf_dir.join("plugins");
 
     if let Ok(metadata) = std::fs::symlink_metadata(&destination) {
         if metadata.is_dir() {
             std::fs::remove_dir(&destination)?;
-            fs::symlink(source, destination).context("Symlink creation failed")?;
+            create_symlink(source, destination)?;
         } else if metadata.is_file() {
             std::fs::remove_file(&destination)?;
-            fs::symlink(source, destination).context("Symlink creation failed")?;
+            create_symlink(source, destination)?;
         }
     } else {
-        fs::symlink(source, destination).context("Symlink creation failed")?;
+        std::fs::create_dir_all(&cf_dir)?;
+        create_symlink(source, destination)?;
     }
 
     Ok(())
+}
+
+#[cfg(target_os = "windows")]
+fn create_symlink<P: AsRef<Path>, Q: AsRef<Path>>(source: P, destination: Q) -> Result<()> {
+    std::os::windows::fs::symlink_dir(source, destination).context("Symlink creation failed")
+}
+
+#[cfg(not(target_os = "windows"))]
+fn create_symlink<P: AsRef<Path>, Q: AsRef<Path>>(source: P, destination: Q) -> Result<()> {
+    fs::symlink(source, destination).context("Symlink creation failed")
 }
 
 pub fn exec(

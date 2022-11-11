@@ -1,8 +1,10 @@
 #[cfg(feature = "integration_tests")]
 mod tests {
     use assert_cmd::prelude::*;
+    use dirs::data_dir;
     use predicates::prelude::*;
     use std::fs;
+    use std::fs::symlink_metadata;
     use std::path::PathBuf;
     use std::process::Command;
     use tempfile::tempdir;
@@ -102,6 +104,38 @@ mod tests {
                 predicate::str::contains(EXEC_TWO_ENVIRONMENTS_PART_1)
                     .and(predicate::str::contains(EXEC_TWO_ENVIRONMENTS_PART_2)),
             );
+
+        Ok(())
+    }
+
+    #[test]
+    fn plugins() -> Result<(), Box<dyn std::error::Error>> {
+        let mut cmd = Command::cargo_bin("mcf")?;
+        let override_path = get_fixture("environment-2");
+
+        let environment_dir = data_dir().unwrap().join("mcf/homes/environment1");
+        let _ = fs::remove_dir_all(environment_dir);
+
+        cmd.arg("exec")
+            .args(vec![
+                "--override-path",
+                override_path
+                    .into_os_string()
+                    .into_string()
+                    .unwrap()
+                    .as_ref(),
+            ])
+            .args(vec!["--cf-binary-name", "echo"])
+            .arg("environment1")
+            .arg("scale your-app -i 3")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains(EXEC_TWO_ENVIRONMENTS_PART_1));
+
+        let mut plugins_dir = data_dir().unwrap();
+        plugins_dir.push("mcf/homes/environment1/.cf/plugins");
+
+        assert!(symlink_metadata(plugins_dir).unwrap().is_symlink());
 
         Ok(())
     }
