@@ -1,8 +1,10 @@
-use crate::{environment, exec, login, settings::Settings, subcommands::Subcommands};
+use crate::{
+    environment, exec, login, options::Options, settings::Settings, subcommands::Subcommands,
+};
 use anyhow::Result;
 use clap::{CommandFactory, Parser};
 use clap_complete::{generate, Generator};
-use std::{io, path::PathBuf};
+use std::io;
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -17,23 +19,23 @@ struct Mcf {
     override_path: Option<String>,
 
     /// Overwrite binary name for cloudfoundry cli (for example: "cf8")
-    #[clap(long, default_value = "cf", global = true)]
-    cf_binary_name: String,
+    #[clap(long, global = true)]
+    cf_binary_name: Option<String>,
 }
 
 pub fn parse() -> Result<()> {
     let mcf: Mcf = Mcf::parse();
-    let override_path: Option<PathBuf> = mcf.override_path.map(|string| PathBuf::from(string));
-    let settings: Settings = Settings::load(override_path.as_ref())?;
+
+    let options = Options::new(mcf.cf_binary_name, mcf.override_path);
+
+    let settings: Settings = Settings::load(&options)?;
     match &mcf.command {
         Subcommands::Environment {
             environment_commands,
-        } => {
-            environment::match_environment(&settings, override_path.as_ref(), environment_commands)
-        }
-        Subcommands::Login { name } => login::to_cf(&settings, mcf.cf_binary_name, name),
+        } => environment::match_environment(&settings, &options, environment_commands),
+        Subcommands::Login { name } => login::to_cf(&settings, &options, name),
         Subcommands::Exec { names, command } => {
-            exec::cf_command(&settings, mcf.cf_binary_name, names, command)
+            exec::cf_command(&settings, &options, names, command)
         }
         Subcommands::Completion { shell } => {
             let mut cmd = Mcf::command();

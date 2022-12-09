@@ -1,7 +1,7 @@
+use crate::options::Options;
 use crate::settings::Settings;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
 use tabled::{Table, Tabled};
 
 #[derive(Debug, Deserialize, Serialize, Clone, Tabled, PartialEq, Eq)]
@@ -32,7 +32,7 @@ pub enum EnvironmentCommands {
 
 pub fn match_environment(
     settings: &Settings,
-    override_path: Option<&PathBuf>,
+    options: &Options,
     environment_commands: &EnvironmentCommands,
 ) -> Result<()> {
     match environment_commands {
@@ -41,22 +41,15 @@ pub fn match_environment(
             url,
             sso,
             skip_ssl_validation,
-        } => add(
-            &settings,
-            override_path,
-            name,
-            url,
-            sso,
-            skip_ssl_validation,
-        ),
-        EnvironmentCommands::Remove { name } => remove(&settings, override_path, name),
+        } => add(&settings, options, name, url, sso, skip_ssl_validation),
+        EnvironmentCommands::Remove { name } => remove(&settings, options, name),
         EnvironmentCommands::List => list(&settings),
     }
 }
 
 pub fn add(
     settings: &Settings,
-    override_path: Option<&PathBuf>,
+    options: &Options,
     name: &String,
     url: &String,
     sso: &bool,
@@ -73,16 +66,16 @@ pub fn add(
     let new_settings = Settings {
         environments: environments,
     };
-    new_settings.save(override_path)
+    new_settings.save(options)
 }
 
-pub fn remove(settings: &Settings, override_path: Option<&PathBuf>, name: &String) -> Result<()> {
+pub fn remove(settings: &Settings, options: &Options, name: &String) -> Result<()> {
     let mut environments = settings.environments.clone();
     environments.retain(|env| &env.name != name);
     let new_settings = Settings {
         environments: environments,
     };
-    new_settings.save(override_path)
+    new_settings.save(options)
 }
 
 pub fn list(settings: &Settings) -> Result<()> {

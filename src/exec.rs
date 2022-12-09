@@ -1,3 +1,4 @@
+use crate::options::Options;
 use crate::{cf, environment::Environment, settings::Settings};
 use anyhow::Result;
 use rayon::prelude::{IntoParallelIterator, ParallelIterator};
@@ -9,10 +10,11 @@ use std::{
 
 pub fn cf_command(
     settings: &Settings,
-    cf_binary_name: String,
+    options: &Options,
     names: &String,
     command: &Vec<String>,
 ) -> Result<()> {
+    let cf_binary_name = &options.cf_binary_name;
     let input_enviroments: Vec<(Option<Environment>, String)> = names
         .split(',')
         .map(|s| s.to_string())
@@ -38,7 +40,7 @@ pub fn cf_command(
     input_enviroments
         .into_par_iter()
         .try_for_each(|(_env, env_name)| -> Result<()> {
-            let stdout: ChildStdout = cf::exec(&cf_binary_name, &env_name, command)?;
+            let stdout: ChildStdout = cf::exec(cf_binary_name, &env_name, command)?;
             let whitespace_length = max_chars - env_name.len();
             let whitespace = (0..=whitespace_length).map(|_| " ").collect::<String>();
 

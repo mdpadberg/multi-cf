@@ -3,6 +3,7 @@ mod cli;
 mod environment;
 mod exec;
 mod login;
+mod options;
 mod settings;
 mod subcommands;
 
