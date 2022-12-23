@@ -10,10 +10,10 @@ pub fn stdout(
     cf_binary_name: &String,
     command: &Vec<String>,
     env_name: &String,
-    source: &PathBuf,
+    original_cf_home: &PathBuf,
     mcf_folder: &PathBuf,
 ) -> Result<process::ChildStdout> {
-    prepare_plugins(env_name, source, mcf_folder)?;
+    prepare_plugins(env_name, original_cf_home, mcf_folder)?;
     Ok(cf_command(cf_binary_name, env_name, mcf_folder)
         .args(command)
         .stdout(Stdio::piped())
@@ -37,8 +37,8 @@ fn get_cf_home_from_mcf_environment(env_name: &String, mcf_folder: &PathBuf) -> 
     return cf_home;
 }
 
-fn prepare_plugins(name: &String, source: &PathBuf, mcf_folder: &PathBuf) -> Result<()> {
-    let source = source.join(".cf/plugins");
+fn prepare_plugins(name: &String, original_cf_home: &PathBuf, mcf_folder: &PathBuf) -> Result<()> {
+    let source = original_cf_home.join(".cf/plugins");
     if !source.exists() {
         bail!("source does not exist, source={:#?}", source);
     }
