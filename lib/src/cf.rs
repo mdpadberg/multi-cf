@@ -6,43 +6,43 @@ use std::{
     process::{self, Command, Stdio},
 };
 
+pub fn stdout(
+    cf_binary_name: &String,
+    command: &Vec<String>,
+    env_name: &String,
+    source: &PathBuf,
+    mcf_folder: &PathBuf,
+) -> Result<process::ChildStdout> {
+    prepare_plugins(env_name, source, mcf_folder)?;
+    Ok(cf_command(cf_binary_name, env_name, mcf_folder)
+        .args(command)
+        .stdout(Stdio::piped())
+        .spawn()
+        .context("Could not spawn")?
+        .stdout
+        .context("Could get stdout")?)
+}
+
 pub fn cf_command(cf_binary_name: &String, name: &String, mcf_folder: &PathBuf) -> Command {
     let mut cf: Command = Command::new(cf_binary_name);
-    let cf_home: PathBuf = get_mcf_home(name, mcf_folder);
+    let cf_home: PathBuf = get_cf_home_from_mcf_environment(name, mcf_folder);
     cf.env("CF_HOME", cf_home);
     cf
 }
 
-fn get_mcf_home(name: &String, mcf_folder: &PathBuf) -> PathBuf {
+fn get_cf_home_from_mcf_environment(env_name: &String, mcf_folder: &PathBuf) -> PathBuf {
     let mut cf_home = mcf_folder.clone();
     cf_home.push("homes");
-    cf_home.push(name);
+    cf_home.push(env_name);
     return cf_home;
 }
-
-//TODO test
-// pub fn exec(
-//     cf_binary_name: &String,
-//     env_name: &String,
-//     command: &Vec<String>,
-// ) -> Result<()> {
-// // ) -> Result<process::ChildStdout> {
-//     prepare_plugins(&env_name)?;
-//     // let child = cf_command(cf_binary_name, env_name)
-//     //     .args(command)
-//     //     .stdout(Stdio::piped())
-//     //     .spawn()
-//     //     .context("Could not spawn")?;
-//     // child.stdout.context("Could get stdout")
-//     Ok(())
-// }
 
 fn prepare_plugins(name: &String, source: &PathBuf, mcf_folder: &PathBuf) -> Result<()> {
     let source = source.join(".cf/plugins");
     if !source.exists() {
         bail!("source does not exist, source={:#?}", source);
     }
-    let cf_dir = get_mcf_home(name, mcf_folder).join(".cf");
+    let cf_dir = get_cf_home_from_mcf_environment(name, mcf_folder).join(".cf");
     let destination = cf_dir.join("plugins");
     if let Ok(metadata) = std::fs::symlink_metadata(&destination) {
         if metadata.is_dir() {
@@ -112,7 +112,7 @@ mod tests {
     #[test]
     fn test_get_mcf_home() {
         let tempdir: PathBuf = tempdir().unwrap().into_path();
-        let result: PathBuf = get_mcf_home(&String::from("envname"), &tempdir.join("mcf-lib-test"));
+        let result: PathBuf = get_cf_home_from_mcf_environment(&String::from("envname"), &tempdir.join("mcf-lib-test"));
         let expected: PathBuf = [
             &tempdir.join("mcf-lib-test").to_str().unwrap(),
             "homes",
@@ -194,7 +194,7 @@ mod tests {
         let source = &tempdir.join("mcf-lib-source").join(".cf").join("plugins");
         let _ = std::fs::create_dir_all(source);
         let _ = std::fs::create_dir_all(
-            get_mcf_home(&String::from("envname"), &tempdir.join("mcf-lib-home"))
+            get_cf_home_from_mcf_environment(&String::from("envname"), &tempdir.join("mcf-lib-home"))
                 .join(".cf")
                 .join("plugins"),
         );
@@ -219,7 +219,7 @@ mod tests {
         let source = &tempdir.join("mcf-lib-source").join(".cf").join("plugins");
         let _ = std::fs::create_dir_all(source);
         let folder =
-            get_mcf_home(&String::from("envname"), &tempdir.join("mcf-lib-home")).join(".cf");
+            get_cf_home_from_mcf_environment(&String::from("envname"), &tempdir.join("mcf-lib-home")).join(".cf");
         let _ = std::fs::create_dir_all(&folder);
         let _ = std::fs::File::create(&folder.join("plugins"));
         let result = prepare_plugins(
