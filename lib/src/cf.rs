@@ -1,7 +1,6 @@
 use crate::options::Options;
 use crate::settings::Settings;
 use anyhow::{bail, Context, Result};
-use std::os::unix::fs;
 use std::path::Path;
 use std::{
     path::PathBuf,
@@ -96,7 +95,7 @@ fn create_symlink<P: AsRef<Path>, Q: AsRef<Path>>(source: P, destination: Q) -> 
 
 #[cfg(not(target_os = "windows"))]
 fn create_symlink<P: AsRef<Path>, Q: AsRef<Path>>(source: P, destination: Q) -> Result<()> {
-    fs::symlink(source, destination).context("Symlink creation failed")
+    std::os::unix::fs::symlink(source, destination).context("Symlink creation failed")
 }
 
 #[cfg(test)]
