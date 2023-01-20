@@ -48,6 +48,16 @@ mod tests {
     #[test]
     fn test_get_mcf_home_path_buf() {
         let option = Options::default();
-        assert_eq!(option.get_mcf_home_path_buf(), PathBuf::from(dirs::home_dir().unwrap().to_str().unwrap().to_string()));
+        assert_eq!(
+            option.get_mcf_home_path_buf(),
+            PathBuf::from(
+                dirs::home_dir()
+                    .unwrap()
+                    .join(".mcf")
+                    .to_str()
+                    .unwrap()
+                    .to_string()
+            )
+        );
     }
 }
