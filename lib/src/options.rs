@@ -38,4 +38,15 @@ impl Default for Options {
     }
 }
 
-//TODO: write tests
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_get_mcf_home_path_buf() {
+        let option = Options::default();
+        assert_eq!(option.get_mcf_home_path_buf(), PathBuf::from(dirs::home_dir().unwrap().to_str().unwrap().to_string()));
+    }
+}
