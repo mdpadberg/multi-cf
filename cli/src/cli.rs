@@ -1,7 +1,8 @@
-use crate::{environment, exec, login, settings::Settings, subcommands::Subcommands};
-use anyhow::Result;
+use crate::{environment, subcommands::Subcommands};
+use anyhow::{Context, Result};
 use clap::{CommandFactory, Parser};
 use clap_complete::{generate, Generator};
+use lib::{cf::login, exec::exec, options::Options, settings::Settings};
 use std::{io, path::PathBuf};
 
 #[derive(Parser, Debug)]
@@ -17,29 +18,32 @@ struct Mcf {
     override_path: Option<String>,
 
     /// Overwrite binary name for cloudfoundry cli (for example: "cf8")
-    #[clap(long, default_value = "cf", global = true)]
-    cf_binary_name: String,
+    #[clap(long, global = true)]
+    cf_binary_name: Option<String>,
 }
 
 pub fn parse() -> Result<()> {
     let mcf: Mcf = Mcf::parse();
-    let override_path: Option<PathBuf> = mcf.override_path.map(|string| PathBuf::from(string));
-    let settings: Settings = Settings::load(override_path.as_ref())?;
+
+    let options = Options::new(mcf.cf_binary_name, mcf.override_path);
+
+    let settings: Settings = Settings::load(&options)?;
     match &mcf.command {
         Subcommands::Environment {
             environment_commands,
-        } => {
-            environment::match_environment(&settings, override_path.as_ref(), environment_commands)
-        }
+        } => environment::match_environment(&settings, &options, environment_commands),
         Subcommands::Login { name } => {
-            login::to_cf(&settings, mcf.cf_binary_name, override_path.as_ref(), name)
+            login(&settings, &options, name, &PathBuf::from(&options.mcf_home))
         }
-        Subcommands::Exec { names, command } => exec::cf_command(
+        Subcommands::Exec { names, command } => exec(
             &settings,
-            mcf.cf_binary_name,
-            override_path.as_ref(),
+            &options,
             names,
             command,
+            &dirs::home_dir()
+                .context("Could not find home dir")?
+                .join(".cf"),
+            &PathBuf::from(&options.mcf_home),
         ),
         Subcommands::Completion { shell } => {
             let mut cmd = Mcf::command();
