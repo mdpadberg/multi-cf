@@ -127,10 +127,7 @@ mod tests {
         assert_eq!(
             Settings::load(&Options {
                 cf_binary_name: "cf".to_string(),
-                mcf_home: tempdir
-                    .to_str()
-                    .unwrap()
-                    .to_string()
+                mcf_home: tempdir.to_str().unwrap().to_string()
             })
             .unwrap()
             .environments[0],
@@ -143,10 +140,7 @@ mod tests {
         init();
         let option = Options {
             cf_binary_name: "cf".to_string(),
-            mcf_home: tempdir().unwrap().into_path()
-                .to_str()
-                .unwrap()
-                .to_string(),
+            mcf_home: tempdir().unwrap().into_path().to_str().unwrap().to_string(),
         };
         let expected = Settings {
             environments: vec![Environment {

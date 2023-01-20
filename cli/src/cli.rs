@@ -2,7 +2,7 @@ use crate::{environment, subcommands::Subcommands};
 use anyhow::{Context, Result};
 use clap::{CommandFactory, Parser};
 use clap_complete::{generate, Generator};
-use lib::{exec::exec, options::Options, settings::Settings, cf::login};
+use lib::{cf::login, exec::exec, options::Options, settings::Settings};
 use std::{io, path::PathBuf};
 
 #[derive(Parser, Debug)]

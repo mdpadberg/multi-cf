@@ -39,8 +39,6 @@ impl Default for Options {
     }
 }
 
-
-
 #[cfg(test)]
 mod tests {
     use super::*;

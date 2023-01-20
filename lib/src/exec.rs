@@ -2,11 +2,11 @@ use crate::cf::stdout;
 use crate::environment::Environment;
 use crate::options::Options;
 use crate::settings::Settings;
-use anyhow::{bail, Result, Context};
+use anyhow::{bail, Context, Result};
 use rayon::prelude::{IntoParallelIterator, ParallelIterator};
+use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 use std::process::ChildStdout;
-use std::io::{BufRead, BufReader};
 
 pub fn exec(
     settings: &Settings,
@@ -42,8 +42,13 @@ pub fn exec(
     input_enviroments
         .into_par_iter()
         .try_for_each(|(_env, env_name)| -> Result<()> {
-            let stdout: ChildStdout =
-                stdout(cf_binary_name, command, &env_name, original_cf_home, mcf_folder)?;
+            let stdout: ChildStdout = stdout(
+                cf_binary_name,
+                command,
+                &env_name,
+                original_cf_home,
+                mcf_folder,
+            )?;
             let whitespace_length = max_chars - env_name.len();
             let whitespace = (0..=whitespace_length).map(|_| " ").collect::<String>();
 
@@ -85,7 +90,7 @@ mod tests {
         );
         assert!(result.is_err());
         assert_eq!(
-            result.unwrap_err().to_string(), 
+            result.unwrap_err().to_string(),
             "could not find \"p02\" in environment list [\n    Environment {\n        name: \"p01\",\n        url: \"url\",\n        sso: false,\n        skip_ssl_validation: false,\n    },\n]"
         );
     }
