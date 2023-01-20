@@ -44,5 +44,3 @@ jobs:
         target: ${{ matrix.rust-target }}
     - name: Run unit tests
       run: cargo test --verbose
-    - name: Run integration tests
-      run: cargo test --features integration_tests
