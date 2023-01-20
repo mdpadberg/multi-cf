@@ -1,16 +1,10 @@
-use crate::options::Options;
-use crate::settings::Settings;
 use anyhow::Result;
-use serde::{Deserialize, Serialize};
-use tabled::{Table, Tabled};
-
-#[derive(Debug, Deserialize, Serialize, Clone, Tabled, PartialEq, Eq)]
-pub struct Environment {
-    pub name: String,
-    pub url: String,
-    pub sso: bool,
-    pub skip_ssl_validation: bool,
-}
+use lib::{
+    environment::{add, list, remove, Environment},
+    options::Options,
+    settings::Settings,
+};
+use prettytable::{Cell, Row, Table};
 
 #[derive(clap::Subcommand, Debug)]
 pub enum EnvironmentCommands {
@@ -43,45 +37,25 @@ pub fn match_environment(
             skip_ssl_validation,
         } => add(&settings, options, name, url, sso, skip_ssl_validation),
         EnvironmentCommands::Remove { name } => remove(&settings, options, name),
-        EnvironmentCommands::List => list(&settings),
+        EnvironmentCommands::List => {
+            let all_envs = list(&settings);
+            let mut table = Table::new();
+            //HEADER
+            table.add_row(Row::new(
+                Environment::get_fields()?
+                    .iter()
+                    .map(|field| Cell::new(field))
+                    .collect(),
+            ));
+            //CONTENT
+            for env in all_envs {
+                let all_values = env.get_values()?;
+                table.add_row(Row::new(
+                    all_values.iter().map(|field| Cell::new(field)).collect(),
+                ));
+            }
+            table.printstd();
+            Ok(())
+        }
     }
-}
-
-pub fn add(
-    settings: &Settings,
-    options: &Options,
-    name: &String,
-    url: &String,
-    sso: &bool,
-    skip_ssl_validation: &bool,
-) -> Result<()> {
-    let mut environments = settings.environments.clone();
-    environments.retain(|env| &env.name != name);
-    environments.push(Environment {
-        name: name.clone(),
-        url: url.clone(),
-        sso: *sso,
-        skip_ssl_validation: *skip_ssl_validation,
-    });
-    let new_settings = Settings {
-        environments: environments,
-    };
-    new_settings.save(options)
-}
-
-pub fn remove(settings: &Settings, options: &Options, name: &String) -> Result<()> {
-    let mut environments = settings.environments.clone();
-    environments.retain(|env| &env.name != name);
-    let new_settings = Settings {
-        environments: environments,
-    };
-    new_settings.save(options)
-}
-
-pub fn list(settings: &Settings) -> Result<()> {
-    let environments = Table::new(settings.environments.clone())
-        .with(tabled::Style::markdown())
-        .to_string();
-    print!("{}", environments);
-    Ok(())
 }

@@ -1,10 +1,9 @@
-use crate::{
-    environment, exec, login, options::Options, settings::Settings, subcommands::Subcommands,
-};
-use anyhow::Result;
+use crate::{environment, subcommands::Subcommands};
+use anyhow::{Context, Result};
 use clap::{CommandFactory, Parser};
 use clap_complete::{generate, Generator};
-use std::io;
+use lib::{exec::exec, options::Options, settings::Settings, cf::login};
+use std::{io, path::PathBuf};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -33,10 +32,19 @@ pub fn parse() -> Result<()> {
         Subcommands::Environment {
             environment_commands,
         } => environment::match_environment(&settings, &options, environment_commands),
-        Subcommands::Login { name } => login::to_cf(&settings, &options, name),
-        Subcommands::Exec { names, command } => {
-            exec::cf_command(&settings, &options, names, command)
+        Subcommands::Login { name } => {
+            login(&settings, &options, name, &PathBuf::from(&options.mcf_home))
         }
+        Subcommands::Exec { names, command } => exec(
+            &settings,
+            &options,
+            names,
+            command,
+            &dirs::home_dir()
+                .context("Could not find home dir")?
+                .join(".cf"),
+            &PathBuf::from(&options.mcf_home),
+        ),
         Subcommands::Completion { shell } => {
             let mut cmd = Mcf::command();
             eprintln!("Generating completion file for {:?}...", shell);

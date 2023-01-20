@@ -1,3 +1,5 @@
+use crate::options::Options;
+use crate::settings::Settings;
 use anyhow::{bail, Context, Result};
 use std::os::unix::fs;
 use std::path::Path;
@@ -5,6 +7,34 @@ use std::{
     path::PathBuf,
     process::{self, Command, Stdio},
 };
+
+pub fn login(
+    settings: &Settings,
+    options: &Options,
+    name: &String,
+    mcf_home: &PathBuf,
+) -> Result<()> {
+    if let Some(some) = settings.environments.iter().find(|env| &env.name == name) {
+        let cf_binary_name = &options.cf_binary_name;
+        let mut cf: Command = cf_command(cf_binary_name, &some.name, mcf_home);
+        cf.arg("login").arg("-a").arg(&some.url);
+        if some.skip_ssl_validation {
+            cf.arg("--skip-ssl-validation");
+        }
+        if some.sso {
+            cf.arg("--sso");
+        }
+        let mut child = cf.spawn().expect("Failure in creating child process");
+        let _ = child.wait();
+    } else {
+        bail!(
+            "could not find {:#?} in environment list {:#?}",
+            name,
+            settings.environments
+        );
+    }
+    Ok(())
+}
 
 pub fn stdout(
     cf_binary_name: &String,
@@ -71,6 +101,8 @@ fn create_symlink<P: AsRef<Path>, Q: AsRef<Path>>(source: P, destination: Q) -> 
 
 #[cfg(test)]
 mod tests {
+    use crate::environment::Environment;
+
     use super::*;
     use std::ffi::OsStr;
     use tempfile::tempdir;
@@ -87,14 +119,14 @@ mod tests {
         assert_eq!(
             result
                 .get_envs()
-                .map(|(key, value)| key)
+                .map(|(key, _)| key)
                 .collect::<Vec<&OsStr>>(),
             vec![OsStr::new("CF_HOME")]
         );
         assert_eq!(
             result
                 .get_envs()
-                .map(|(key, value)| value)
+                .map(|(_, value)| value)
                 .filter(|value| value.is_some())
                 .filter(|value| value.unwrap().to_str().unwrap()
                     == tempdir
@@ -112,7 +144,10 @@ mod tests {
     #[test]
     fn test_get_mcf_home() {
         let tempdir: PathBuf = tempdir().unwrap().into_path();
-        let result: PathBuf = get_cf_home_from_mcf_environment(&String::from("envname"), &tempdir.join("mcf-lib-test"));
+        let result: PathBuf = get_cf_home_from_mcf_environment(
+            &String::from("envname"),
+            &tempdir.join("mcf-lib-test"),
+        );
         let expected: PathBuf = [
             &tempdir.join("mcf-lib-test").to_str().unwrap(),
             "homes",
@@ -194,9 +229,12 @@ mod tests {
         let source = &tempdir.join(".cf").join("plugins");
         let _ = std::fs::create_dir_all(source);
         let _ = std::fs::create_dir_all(
-            get_cf_home_from_mcf_environment(&String::from("envname"), &tempdir.join("mcf-lib-home"))
-                .join(".cf")
-                .join("plugins"),
+            get_cf_home_from_mcf_environment(
+                &String::from("envname"),
+                &tempdir.join("mcf-lib-home"),
+            )
+            .join(".cf")
+            .join("plugins"),
         );
         let result = prepare_plugins(
             &String::from("envname"),
@@ -218,8 +256,11 @@ mod tests {
         let tempdir: PathBuf = tempdir().unwrap().into_path();
         let source = &tempdir.join(".cf").join("plugins");
         let _ = std::fs::create_dir_all(source);
-        let folder =
-            get_cf_home_from_mcf_environment(&String::from("envname"), &tempdir.join("mcf-lib-home")).join(".cf");
+        let folder = get_cf_home_from_mcf_environment(
+            &String::from("envname"),
+            &tempdir.join("mcf-lib-home"),
+        )
+        .join(".cf");
         let _ = std::fs::create_dir_all(&folder);
         let _ = std::fs::File::create(&folder.join("plugins"));
         let result = prepare_plugins(
@@ -235,5 +276,50 @@ mod tests {
             .join(".cf")
             .join("plugins")
             .is_symlink());
+    }
+
+    #[test]
+    fn test_login_could_not_find_environment_in_list() {
+        let tempdir: PathBuf = tempdir().unwrap().into_path();
+        let result = login(
+            &Settings {
+                environments: vec![Environment {
+                    name: "p01".to_string(),
+                    url: "url".to_string(),
+                    sso: false,
+                    skip_ssl_validation: false,
+                }],
+            },
+            &Options {
+                cf_binary_name: String::from("echo"),
+                mcf_home: tempdir.to_str().unwrap().to_string(),
+            },
+            &String::from("p02"),
+            &PathBuf::from(""),
+        );
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().to_string(), "could not find \"p02\" in environment list [\n    Environment {\n        name: \"p01\",\n        url: \"url\",\n        sso: false,\n        skip_ssl_validation: false,\n    },\n]");
+    }
+
+    #[test]
+    fn test_login_happy_case() {
+        let tempdir: PathBuf = tempdir().unwrap().into_path();
+        let result = login(
+            &Settings {
+                environments: vec![Environment {
+                    name: "p01".to_string(),
+                    url: "url".to_string(),
+                    sso: false,
+                    skip_ssl_validation: false,
+                }],
+            },
+            &Options {
+                cf_binary_name: String::from("echo"),
+                mcf_home: tempdir.to_str().unwrap().to_string(),
+            },
+            &String::from("p01"),
+            &PathBuf::from(""),
+        );
+        assert!(result.is_ok());
     }
 }

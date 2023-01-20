@@ -1,14 +1,40 @@
 use crate::options::Options;
 use crate::settings::Settings;
-use anyhow::Result;
+use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Default)]
 pub struct Environment {
     pub name: String,
     pub url: String,
     pub sso: bool,
     pub skip_ssl_validation: bool,
+}
+
+impl Environment {
+    pub fn get_fields() -> Result<Vec<String>> {
+        Ok(serde_yaml::to_value(&Environment::default())?
+            .as_mapping()
+            .context("could not deserialize environment")?
+            .keys()
+            .into_iter()
+            .map(|key| key.as_str())
+            .filter(|key| key.is_some())
+            .map(|key| key.unwrap().to_string())
+            .collect::<Vec<String>>())
+    }
+
+    pub fn get_values(&self) -> Result<Vec<String>> {
+        Ok(serde_yaml::to_value(self)?
+            .as_mapping()
+            .context("could not deserialize environment")?
+            .values()
+            .into_iter()
+            .map(|value| serde_yaml::to_string(value))
+            .filter(|value| value.is_ok())
+            .map(|values| values.unwrap().to_string().replace("\n", ""))
+            .collect::<Vec<String>>())
+    }
 }
 
 pub fn add(
@@ -118,7 +144,7 @@ mod tests {
                 cf_binary_name: String::from("cf"),
                 mcf_home: source.to_str().unwrap().to_string(),
             },
-            &String::from("one")
+            &String::from("one"),
         );
         assert!(result.is_ok());
         assert_eq!(

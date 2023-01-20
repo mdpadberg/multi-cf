@@ -1,13 +1,6 @@
-mod cf;
 mod cli;
 mod environment;
-mod exec;
-mod login;
-mod options;
-mod settings;
 mod subcommands;
-
-#[macro_use]
 extern crate log;
 
 fn main() -> Result<(), anyhow::Error> {
