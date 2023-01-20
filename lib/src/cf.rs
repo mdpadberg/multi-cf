@@ -38,7 +38,7 @@ fn get_cf_home_from_mcf_environment(env_name: &String, mcf_folder: &PathBuf) -> 
 }
 
 fn prepare_plugins(name: &String, original_cf_home: &PathBuf, mcf_folder: &PathBuf) -> Result<()> {
-    let source = original_cf_home.join(".cf/plugins");
+    let source = original_cf_home.join("plugins");
     if !source.exists() {
         bail!("source does not exist, source={:#?}", source);
     }
@@ -126,12 +126,12 @@ mod tests {
     #[test]
     fn test_prepare_plugins_if_happy_case() {
         let tempdir: PathBuf = tempdir().unwrap().into_path();
-        let source = &tempdir.join("mcf-lib-source").join(".cf").join("plugins");
+        let source = &tempdir.join(".cf").join("plugins");
         let _ = std::fs::create_dir_all(source);
         let _ = std::fs::File::create(source.join("test-file"));
         let result = prepare_plugins(
             &String::from("envname"),
-            &tempdir.join("mcf-lib-source"),
+            &tempdir.join(".cf"),
             &tempdir.join("mcf-lib-home"),
         );
         assert!(result.is_ok());
@@ -152,7 +152,7 @@ mod tests {
                     .join("plugins")
             )
             .unwrap(),
-            tempdir.join("mcf-lib-source").join(".cf").join("plugins")
+            tempdir.join(".cf").join("plugins")
         );
         assert!(
             std::fs::read_dir(
@@ -177,7 +177,7 @@ mod tests {
         let tempdir: PathBuf = tempdir().unwrap().into_path();
         let result = prepare_plugins(
             &String::from("envname"),
-            &tempdir.join("mcf-lib-source"),
+            &tempdir.join(".cf"),
             &tempdir.join("mcf-lib-home"),
         );
         assert!(result.is_err());
@@ -191,7 +191,7 @@ mod tests {
     #[test]
     fn test_prepare_plugins_if_folder_exists() {
         let tempdir: PathBuf = tempdir().unwrap().into_path();
-        let source = &tempdir.join("mcf-lib-source").join(".cf").join("plugins");
+        let source = &tempdir.join(".cf").join("plugins");
         let _ = std::fs::create_dir_all(source);
         let _ = std::fs::create_dir_all(
             get_cf_home_from_mcf_environment(&String::from("envname"), &tempdir.join("mcf-lib-home"))
@@ -200,7 +200,7 @@ mod tests {
         );
         let result = prepare_plugins(
             &String::from("envname"),
-            &tempdir.join("mcf-lib-source"),
+            &tempdir.join(".cf"),
             &tempdir.join("mcf-lib-home"),
         );
         assert!(result.is_ok());
@@ -216,7 +216,7 @@ mod tests {
     #[test]
     fn test_prepare_plugins_if_file_exists() {
         let tempdir: PathBuf = tempdir().unwrap().into_path();
-        let source = &tempdir.join("mcf-lib-source").join(".cf").join("plugins");
+        let source = &tempdir.join(".cf").join("plugins");
         let _ = std::fs::create_dir_all(source);
         let folder =
             get_cf_home_from_mcf_environment(&String::from("envname"), &tempdir.join("mcf-lib-home")).join(".cf");
@@ -224,7 +224,7 @@ mod tests {
         let _ = std::fs::File::create(&folder.join("plugins"));
         let result = prepare_plugins(
             &String::from("envname"),
-            &tempdir.join("mcf-lib-source"),
+            &tempdir.join(".cf"),
             &tempdir.join("mcf-lib-home"),
         );
         assert!(result.is_ok());
