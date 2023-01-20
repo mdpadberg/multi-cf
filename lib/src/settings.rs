@@ -102,7 +102,9 @@ mod tests {
     #[test]
     fn load_will_return_empty_settings_file_when_there_is_no_file_on_disk() {
         init();
-        let options = Options::default();
+        let tempdir = tempdir().unwrap().into_path().to_str().unwrap().to_string();
+
+        let options = Options::new(None, Some(tempdir));
         assert_eq!(Settings::load(&options).unwrap(), Settings::default());
     }
 

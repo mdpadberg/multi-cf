@@ -31,6 +31,7 @@ impl Default for Options {
             cf_binary_name: "cf".to_string(),
             mcf_home: dirs::home_dir()
                 .expect("OS not supported")
+                .join(".mcf")
                 .to_str()
                 .unwrap()
                 .to_string(),
