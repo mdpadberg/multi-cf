@@ -8,15 +8,14 @@ Multi cf is a cli tool that can be used to execute commands on multiple cloud fo
 brew install mdpadberg/tap/mcf
 ```
 
-To enable auto complete for zsh and/or bash use ca use brew shell complete. You can find more information about here:
-https://docs.brew.sh/Shell-Completion
+To enable auto complete for zsh and/or bash, you can use brew shell complete. You can find more information about it here: https://docs.brew.sh/Shell-Completion
 
 ### Linux
 ```
 brew install mdpadberg/tap/mcf
 ```
 
-To enable auto complete for zsh and/or bash use ca use brew shell complete. You can find more information about here: https://docs.brew.sh/Shell-Completion
+To enable auto complete for zsh and/or bash you can use brew shell complete. You can find more information about it here: https://docs.brew.sh/Shell-Completion
 
 ### Windows   
 Go to the release page and download the latest release: https://github.com/mdpadberg/multi-cf/releases
