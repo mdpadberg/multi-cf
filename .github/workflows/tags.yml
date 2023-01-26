@@ -109,7 +109,7 @@ jobs:
       run: |
         git config --global user.name 'Github tags action'
         git config --global user.email '43384430+mdpadberg@users.noreply.github.com'
-        git add Cargo.toml
+        git add **/Cargo.toml
         git commit -m "version bump to ${{ env.RELEASE_VERSION }}"
         git push 
   trigger_tap:
