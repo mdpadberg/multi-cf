@@ -1,21 +1,24 @@
 # Multi-cf (mcf)
 Multi cf is a cli tool that can be used to execute commands on multiple cloud foundry environments at once.
 
-## Install
+## Contact
+Please check the [maintainers](./MAINTAINERS.md) to get in touch with us.
+
+## Installation
 
 ### macOS
 ```
 brew install mdpadberg/tap/mcf
 ```
 
-To enable auto complete for zsh and/or bash, you can use brew shell complete. You can find more information about it here: https://docs.brew.sh/Shell-Completion
+You can use brew to enable shell auto complete. You can find more information about it here: https://docs.brew.sh/Shell-Completion
 
 ### Linux
 ```
 brew install mdpadberg/tap/mcf
 ```
 
-To enable auto complete for zsh and/or bash you can use brew shell complete. You can find more information about it here: https://docs.brew.sh/Shell-Completion
+You can use brew to enable shell auto complete. You can find more information about it here: https://docs.brew.sh/Shell-Completion
 
 ### Windows   
 Go to the release page and download the latest release: https://github.com/mdpadberg/multi-cf/releases
