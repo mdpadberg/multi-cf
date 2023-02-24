@@ -41,15 +41,14 @@ pub fn stdout(
     env_name: &String,
     original_cf_home: &PathBuf,
     mcf_folder: &PathBuf,
-) -> Result<process::ChildStdout> {
+) -> Result<process::Child> {
     prepare_plugins(env_name, original_cf_home, mcf_folder)?;
     Ok(cf_command(cf_binary_name, env_name, mcf_folder)
         .args(command)
         .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
         .spawn()
-        .context("Could not spawn")?
-        .stdout
-        .context("Could get stdout")?)
+        .context("Could not spawn")?)
 }
 
 pub fn cf_command(cf_binary_name: &String, name: &String, mcf_folder: &PathBuf) -> Command {

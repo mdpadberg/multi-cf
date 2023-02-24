@@ -22,7 +22,7 @@ struct Mcf {
     cf_binary_name: Option<String>,
 }
 
-pub fn parse() -> Result<()> {
+pub async fn parse() -> Result<()> {
     let mcf: Mcf = Mcf::parse();
 
     let options = Options::new(mcf.cf_binary_name, mcf.override_path);
@@ -44,7 +44,7 @@ pub fn parse() -> Result<()> {
                 .context("Could not find home dir")?
                 .join(".cf"),
             &PathBuf::from(&options.mcf_home),
-        ),
+        ).await,
         Subcommands::Completion { shell } => {
             let mut cmd = Mcf::command();
             eprintln!("Generating completion file for {:?}...", shell);
