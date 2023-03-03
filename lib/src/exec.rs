@@ -1,4 +1,4 @@
-use crate::cf::stdout;
+use crate::cf::{child, child_tokio};
 use crate::environment::Environment;
 use crate::options::Options;
 use crate::settings::Settings;
@@ -8,7 +8,7 @@ use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 use std::process::{Child, ChildStderr, ChildStdout};
 
-pub async fn exec(
+pub async fn exec_parallel(
     settings: &Settings,
     options: &Options,
     names: &String,
@@ -16,49 +16,32 @@ pub async fn exec(
     original_cf_home: &PathBuf,
     mcf_folder: &PathBuf,
 ) -> Result<()> {
-    let cf_binary_name = &options.cf_binary_name;
-    let input_enviroments: Vec<(Option<Environment>, String)> = names
-        .split(',')
-        .map(|s| s.to_string())
-        .map(|env| (settings.get_environment_by_name(&env), env))
-        .collect();
-
-    for env in input_enviroments.iter() {
-        if env.0.is_none() {
-            bail!(
-                "could not find {:#?} in environment list {:#?}",
-                env.1,
-                settings.environments
-            );
-        }
-    }
-
-    let max_chars = input_enviroments
-        .iter()
-        .map(|(_env, env_name)| env_name.len())
-        .max()
-        .context("environment name should have length")?;
-
+    let input_enviroments = input_enviroments(names, settings);
+    check_if_all_enviroments_are_known(&input_enviroments, settings)?;
+    let max_chars = max_enviroment_name_length(&input_enviroments)?;
     let tasks: Vec<tokio::task::JoinHandle<Result<(), anyhow::Error>>> = input_enviroments
-        .iter()
+        .into_iter()
         .map(|(_env, env_name)| {
-            let child: Child = stdout(
-                cf_binary_name,
+            let child: Child = child(
+                &options.cf_binary_name,
                 command,
                 &env_name,
                 original_cf_home,
                 mcf_folder,
-            )
-            .unwrap();
+            )?;
             let whitespace_length = max_chars - env_name.len();
             let whitespace = (0..=whitespace_length).map(|_| " ").collect::<String>();
-            let stdout = child.stdout.context("context").unwrap();
-            let stderr = child.stderr.context("context").unwrap();
-            vec![
-                tokio::spawn(async move { testone(stdout).await }),
-                tokio::spawn(async move { testtwo(stderr).await }),
-            ]
+            let stdout = child.stdout.context("context")?;
+            let stderr = child.stderr.context("context")?;
+            Ok(vec![
+                tokio::spawn(async move { print_stdout(env_name, whitespace, stdout).await }),
+                tokio::spawn(async move {
+                    bail_if_stderr_contains_interactive_mode_error(stderr).await
+                }),
+            ])
         })
+        .collect::<Result<Vec<Vec<tokio::task::JoinHandle<Result<(), anyhow::Error>>>>>>()?
+        .into_iter()
         .flatten()
         .collect();
 
@@ -70,31 +53,83 @@ pub async fn exec(
         .filter(|result| result.is_err())
         .any(|result_with_error| match result_with_error {
             Ok(_) => false,
-            Err(err) => if err.to_string() == "We need to switch to interactive mode" {
-                true
-            } else {
-                false
-            },
+            Err(err) => {
+                if err.to_string() == "We need to switch to interactive mode" {
+                    true
+                } else {
+                    false
+                }
+            }
         });
 
-    //TODO:
-    // -clean up code
-    // -fix tests
-    // -create new exec_interactive_mode function
-    // -let cli call this exec_interactive_mode function if above return an error
-
+    if we_need_to_switch {
+        bail!("We need to switch to interactive mode")
+    }
     Ok(())
 }
 
-async fn testone(stdout: ChildStdout) -> Result<()> {
+pub async fn exec_sequential(
+    settings: &Settings,
+    options: &Options,
+    names: &String,
+    command: &Vec<String>,
+    original_cf_home: &PathBuf,
+    mcf_folder: &PathBuf,
+) -> Result<()> {
+    let input_enviroments = input_enviroments(names, settings);
+    check_if_all_enviroments_are_known(&input_enviroments, settings)?;
+    for (_env, env_name) in input_enviroments {
+        println!("------------------ NOW ENVIROMENT {} ------------------", env_name);
+        let child: tokio::process::Child = child_tokio(
+            &options.cf_binary_name,
+            command,
+            &env_name,
+            original_cf_home,
+            mcf_folder,
+        )?;
+        child.wait_with_output().await?;
+    }
+    Ok(())
+}
+
+fn max_enviroment_name_length(input_enviroments: &Vec<(Option<Environment>, String)>) -> Result<usize, anyhow::Error> {
+    Ok(input_enviroments
+        .iter()
+        .map(|(_env, env_name)| env_name.len())
+        .max()
+        .context("environment name should have length")?)
+}
+
+fn check_if_all_enviroments_are_known(input_enviroments: &Vec<(Option<Environment>, String)>, settings: &Settings) -> Result<()> {
+    for env in input_enviroments.iter() {
+        if env.0.is_none() {
+            bail!(
+                "could not find {:#?} in environment list {:#?}",
+                env.1,
+                settings.environments
+            );
+        }
+    }
+    Ok(())
+}
+
+fn input_enviroments(names: &String, settings: &Settings) -> Vec<(Option<Environment>, String)> {
+    names
+        .split(',')
+        .map(|s| s.to_string())
+        .map(|env| (settings.get_environment_by_name(&env), env))
+        .collect::<Vec<(Option<Environment>, String)>>()
+}
+
+async fn print_stdout(env_name: String, whitespace: String, stdout: ChildStdout) -> Result<()> {
     BufReader::new(stdout)
         .lines()
         .filter_map(|line| line.ok())
-        .for_each(|line| println!("{}{}| {}", "&env_name", " ", line));
+        .for_each(|line| println!("{}{}| {}", env_name, whitespace, line));
     Ok(())
 }
 
-async fn testtwo(stderr: ChildStderr) -> Result<()> {
+async fn bail_if_stderr_contains_interactive_mode_error(stderr: ChildStderr) -> Result<()> {
     for line in BufReader::new(stderr).lines() {
         if line.is_ok() && line?.contains("inappropriate ioctl for device") {
             bail!("We need to switch to interactive mode")
@@ -102,8 +137,6 @@ async fn testtwo(stderr: ChildStderr) -> Result<()> {
     }
     Ok(())
 }
-
-
 
 // #[cfg(test)]
 // mod tests {

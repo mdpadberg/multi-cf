@@ -35,7 +35,7 @@ pub fn login(
     Ok(())
 }
 
-pub fn stdout(
+pub fn child(
     cf_binary_name: &String,
     command: &Vec<String>,
     env_name: &String,
@@ -51,8 +51,29 @@ pub fn stdout(
         .context("Could not spawn")?)
 }
 
+pub fn child_tokio(
+    cf_binary_name: &String,
+    command: &Vec<String>,
+    env_name: &String,
+    original_cf_home: &PathBuf,
+    mcf_folder: &PathBuf,
+) -> Result<tokio::process::Child> {
+    prepare_plugins(env_name, original_cf_home, mcf_folder)?;
+    Ok(cf_command_tokio(cf_binary_name, env_name, mcf_folder)
+        .args(command)
+        .spawn()
+        .context("Could not spawn")?)
+}
+
 pub fn cf_command(cf_binary_name: &String, name: &String, mcf_folder: &PathBuf) -> Command {
     let mut cf: Command = Command::new(cf_binary_name);
+    let cf_home: PathBuf = get_cf_home_from_mcf_environment(name, mcf_folder);
+    cf.env("CF_HOME", cf_home);
+    cf
+}
+
+pub fn cf_command_tokio(cf_binary_name: &String, name: &String, mcf_folder: &PathBuf) -> tokio::process::Command {
+    let mut cf: tokio::process::Command = tokio::process::Command::new(cf_binary_name);
     let cf_home: PathBuf = get_cf_home_from_mcf_environment(name, mcf_folder);
     cf.env("CF_HOME", cf_home);
     cf

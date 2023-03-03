@@ -1,8 +1,10 @@
 use crate::{environment, subcommands::Subcommands};
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use clap::{CommandFactory, Parser};
 use clap_complete::{generate, Generator};
-use lib::{cf::login, exec::exec, options::Options, settings::Settings};
+use lib::{
+    cf::login, exec::exec_parallel, exec::exec_sequential, options::Options, settings::Settings,
+};
 use std::{io, path::PathBuf};
 
 #[derive(Parser, Debug)]
@@ -35,16 +37,41 @@ pub async fn parse() -> Result<()> {
         Subcommands::Login { name } => {
             login(&settings, &options, name, &PathBuf::from(&options.mcf_home))
         }
-        Subcommands::Exec { names, command } => exec(
-            &settings,
-            &options,
-            names,
-            command,
-            &dirs::home_dir()
-                .context("Could not find home dir")?
-                .join(".cf"),
-            &PathBuf::from(&options.mcf_home),
-        ).await,
+        Subcommands::Exec { names, command } => {
+            match exec_parallel(
+                &settings,
+                &options,
+                names,
+                command,
+                &dirs::home_dir()
+                    .context("Could not find home dir")?
+                    .join(".cf"),
+                &PathBuf::from(&options.mcf_home),
+            )
+            .await
+            {
+                Ok(_) => Ok(()),
+                Err(error) => {
+                    println!("🤖🤖🤖 We noticed you are using a command which requires interactive mode 🤖🤖🤖");
+                    println!("🤖🤖🤖 Switching to sequential interactive mode 🤖🤖🤖");
+                    if error.to_string() == "We need to switch to interactive mode" {
+                        exec_sequential(
+                            &settings,
+                            &options,
+                            names,
+                            command,
+                            &dirs::home_dir()
+                                .context("Could not find home dir")?
+                                .join(".cf"),
+                            &PathBuf::from(&options.mcf_home),
+                        )
+                        .await
+                    } else {
+                        bail!(error);
+                    }
+                }
+            }
+        }
         Subcommands::Completion { shell } => {
             let mut cmd = Mcf::command();
             eprintln!("Generating completion file for {:?}...", shell);
