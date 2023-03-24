@@ -21,12 +21,12 @@ brew install mdpadberg/tap/mcf
 You can use brew to enable shell auto complete. You can find more information about it here: https://docs.brew.sh/Shell-Completion
 
 ### Windows   
-Go to the release page and download the latest release: https://github.com/mdpadberg/multi-cf/releases
+```
+scoop bucket add mcf https://github.com/mdpadberg/scoop-bucket.git
+scoop install mcf
+```
 
-```
-Work in progress:
-We are busy with putting in winget or something similar
-```
+> :warning: Could be the case that you need to run your terminal in admin mode to make mcf work
 
 ## Examples
 ```console
