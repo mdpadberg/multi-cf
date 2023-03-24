@@ -22,7 +22,7 @@ You can use brew to enable shell auto complete. You can find more information ab
 
 ### Windows   
 ```
-scoop bucket add mcf https://github.com/mdpadberg/scoop-bucket.git
+scoop bucket add mdpadberg https://github.com/mdpadberg/scoop-bucket.git
 scoop install mcf
 ```
 
