@@ -2,10 +2,25 @@ use crate::options::Options;
 use crate::settings::Settings;
 use anyhow::{bail, Context, Result};
 use std::path::Path;
+use std::sync::Arc;
 use std::{
     path::PathBuf,
     process::{self, Command, Stdio},
 };
+use strum::{EnumIter, AsRefStr, IntoEnumIterator};
+
+#[derive(Debug, EnumIter, AsRefStr)]
+pub enum CFSubCommandsThatRequireSequentialMode {
+    Ssh,
+    Delete,
+}
+
+impl CFSubCommandsThatRequireSequentialMode {
+    pub fn check_if_contains(input: String) -> bool {
+        CFSubCommandsThatRequireSequentialMode::iter()
+            .any(|cfsubcommand| input.contains(&cfsubcommand.as_ref().to_lowercase()))
+    }
+}
 
 pub fn login(
     settings: &Settings,
@@ -52,15 +67,15 @@ pub fn child(
 }
 
 pub fn child_tokio(
-    cf_binary_name: &String,
-    command: &Vec<String>,
+    options: Arc<Options>,
+    command: Arc<Vec<String>>,
     env_name: &String,
-    original_cf_home: &PathBuf,
-    mcf_folder: &PathBuf,
+    original_cf_home: Arc<PathBuf>,
+    mcf_folder: Arc<PathBuf>,
 ) -> Result<tokio::process::Child> {
-    prepare_plugins(env_name, original_cf_home, mcf_folder)?;
-    Ok(cf_command_tokio(cf_binary_name, env_name, mcf_folder)
-        .args(command)
+    prepare_plugins(env_name, &original_cf_home, &mcf_folder)?;
+    Ok(cf_command_tokio(&options.cf_binary_name, env_name, &mcf_folder)
+        .args(command.to_vec())
         .spawn()
         .context("Could not spawn")?)
 }
@@ -127,6 +142,12 @@ mod tests {
     use tempfile::tempdir;
 
     #[test]
+    fn test() {
+        let a = CFSubCommandsThatRequireSequentialMode::Apps;
+        println!("{:#?}", a);
+    }
+
+    #[test]
     fn test_cf_command() {
         let tempdir: PathBuf = tempdir().unwrap().into_path();
         let result = cf_command(
@@ -149,11 +170,11 @@ mod tests {
                 .filter(|value| value.is_some())
                 .filter(|value| value.unwrap().to_str().unwrap()
                     == tempdir
-                        .join("mcf-lib-test")
-                        .join("homes")
-                        .join("envname")
-                        .to_str()
-                        .unwrap())
+                    .join("mcf-lib-test")
+                    .join("homes")
+                    .join("envname")
+                    .to_str()
+                    .unwrap())
                 .collect::<Vec<Option<&OsStr>>>()
                 .len(),
             1
@@ -172,8 +193,8 @@ mod tests {
             "homes",
             &String::from("envname"),
         ]
-        .iter()
-        .collect::<PathBuf>();
+            .iter()
+            .collect::<PathBuf>();
         assert_eq!(result, expected);
     }
 
@@ -205,7 +226,7 @@ mod tests {
                     .join(".cf")
                     .join("plugins")
             )
-            .unwrap(),
+                .unwrap(),
             tempdir.join(".cf").join("plugins")
         );
         assert!(
@@ -217,11 +238,11 @@ mod tests {
                     .join(".cf")
                     .join("plugins")
             )
-            .unwrap()
-            .into_iter()
-            .map(|path| String::from(path.unwrap().file_name().to_str().unwrap()))
-            .filter(|file| file == &"test-file")
-            .count()
+                .unwrap()
+                .into_iter()
+                .map(|path| String::from(path.unwrap().file_name().to_str().unwrap()))
+                .filter(|file| file == &"test-file")
+                .count()
                 == 1
         );
     }
@@ -252,8 +273,8 @@ mod tests {
                 &String::from("envname"),
                 &tempdir.join("mcf-lib-home"),
             )
-            .join(".cf")
-            .join("plugins"),
+                .join(".cf")
+                .join("plugins"),
         );
         let result = prepare_plugins(
             &String::from("envname"),
@@ -279,7 +300,7 @@ mod tests {
             &String::from("envname"),
             &tempdir.join("mcf-lib-home"),
         )
-        .join(".cf");
+            .join(".cf");
         let _ = std::fs::create_dir_all(&folder);
         let _ = std::fs::File::create(&folder.join("plugins"));
         let result = prepare_plugins(

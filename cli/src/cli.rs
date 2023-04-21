@@ -3,9 +3,9 @@ use anyhow::{bail, Context, Result};
 use clap::{CommandFactory, Parser};
 use clap_complete::{generate, Generator};
 use lib::{
-    cf::login, exec::exec_parallel, exec::exec_sequential, options::Options, settings::Settings,
+    cf::login, exec::exec, options::Options, settings::Settings,
 };
-use std::{io, path::PathBuf};
+use std::{io, path::PathBuf, sync::Arc};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -37,40 +37,21 @@ pub async fn parse() -> Result<()> {
         Subcommands::Login { name } => {
             login(&settings, &options, name, &PathBuf::from(&options.mcf_home))
         }
-        Subcommands::Exec { names, command } => {
-            match exec_parallel(
+        Subcommands::Exec { names, command, sequential_mode } => {
+            exec(
                 &settings,
-                &options,
+                Arc::new(options.clone()),
                 names,
-                command,
-                &dirs::home_dir()
-                    .context("Could not find home dir")?
-                    .join(".cf"),
-                &PathBuf::from(&options.mcf_home),
+                Arc::new(command.to_vec()),
+                Arc::new(
+                    dirs::home_dir()
+                        .context("Could not find home dir")?
+                        .join(".cf"),
+                ),
+                Arc::new(PathBuf::from(options.mcf_home)),
+                sequential_mode
             )
             .await
-            {
-                Ok(_) => Ok(()),
-                Err(error) => {
-                    println!("🤖🤖🤖 We noticed you are using a command which requires interactive mode 🤖🤖🤖");
-                    println!("🤖🤖🤖 Switching to sequential interactive mode 🤖🤖🤖");
-                    if error.to_string() == "We need to switch to interactive mode" {
-                        exec_sequential(
-                            &settings,
-                            &options,
-                            names,
-                            command,
-                            &dirs::home_dir()
-                                .context("Could not find home dir")?
-                                .join(".cf"),
-                            &PathBuf::from(&options.mcf_home),
-                        )
-                        .await
-                    } else {
-                        bail!(error);
-                    }
-                }
-            }
         }
         Subcommands::Completion { shell } => {
             let mut cmd = Mcf::command();

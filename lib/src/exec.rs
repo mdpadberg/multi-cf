@@ -1,87 +1,63 @@
-use crate::cf::{child, child_tokio};
+use std::io::{BufRead, BufReader};
+use std::path::PathBuf;
+use std::process::{ChildStderr, ChildStdout};
+use std::sync::Arc;
+use anyhow::{bail, Context, Result};
+use futures::future;
+use tokio::task::JoinHandle;
+use crate::cf::{CFSubCommandsThatRequireSequentialMode, child_tokio};
 use crate::environment::Environment;
 use crate::options::Options;
 use crate::settings::Settings;
-use anyhow::{bail, Context, Result};
-use futures::future;
-use std::io::{BufRead, BufReader};
-use std::path::PathBuf;
-use std::process::{Child, ChildStderr, ChildStdout};
 
-pub async fn exec_parallel(
+pub async fn exec(
     settings: &Settings,
-    options: &Options,
+    options: Arc<Options>,
     names: &String,
-    command: &Vec<String>,
-    original_cf_home: &PathBuf,
-    mcf_folder: &PathBuf,
+    command: Arc<Vec<String>>,
+    original_cf_home: Arc<PathBuf>,
+    mcf_folder: Arc<PathBuf>,
+    sequential_mode: &bool,
 ) -> Result<()> {
-    let input_enviroments = input_enviroments(names, settings);
-    check_if_all_enviroments_are_known(&input_enviroments, settings)?;
-    let max_chars = max_enviroment_name_length(&input_enviroments)?;
-    let tasks: Vec<tokio::task::JoinHandle<Result<(), anyhow::Error>>> = input_enviroments
-        .into_iter()
-        .map(|(_env, env_name)| {
-            let child: Child = child(
-                &options.cf_binary_name,
-                command,
-                &env_name,
-                original_cf_home,
-                mcf_folder,
-            )?;
-            let whitespace_length = max_chars - env_name.len();
-            let whitespace = (0..=whitespace_length).map(|_| " ").collect::<String>();
-            let stdout = child.stdout.context("context")?;
-            let stderr = child.stderr.context("context")?;
-            Ok(vec![
-                tokio::spawn(async move { print_stdout(env_name, whitespace, stdout).await }),
-                tokio::spawn(async move {
-                    bail_if_stderr_contains_interactive_mode_error(stderr).await
-                }),
-            ])
-        })
-        .collect::<Result<Vec<Vec<tokio::task::JoinHandle<Result<(), anyhow::Error>>>>>>()?
-        .into_iter()
-        .flatten()
-        .collect();
-
-    let we_need_to_switch = future::join_all(tasks)
-        .await
-        .into_iter()
-        .filter(|result| result.is_ok())
-        .map(|result| result.unwrap())
-        .filter(|result| result.is_err())
-        .any(|result_with_error| match result_with_error {
-            Ok(_) => false,
-            Err(err) => {
-                if err.to_string() == "We need to switch to interactive mode" {
-                    true
-                } else {
-                    false
-                }
-            }
-        });
-
-    if we_need_to_switch {
-        bail!("We need to switch to interactive mode")
+    if CFSubCommandsThatRequireSequentialMode::check_if_contains(command.join("")) || *sequential_mode {
+        exec_sequential(
+            settings,
+            options,
+            names,
+            command,
+            original_cf_home,
+            mcf_folder,
+        ).await
+    } else {
+        exec_parallel(
+            settings,
+            options,
+            names,
+            command,
+            original_cf_home,
+            mcf_folder,
+        ).await
     }
-    Ok(())
 }
 
-pub async fn exec_sequential(
+async fn exec_sequential(
     settings: &Settings,
-    options: &Options,
+    options: Arc<Options>,
     names: &String,
-    command: &Vec<String>,
-    original_cf_home: &PathBuf,
-    mcf_folder: &PathBuf,
+    command: Arc<Vec<String>>,
+    original_cf_home: Arc<PathBuf>,
+    mcf_folder: Arc<PathBuf>,
 ) -> Result<()> {
     let input_enviroments = input_enviroments(names, settings);
     check_if_all_enviroments_are_known(&input_enviroments, settings)?;
     for (_env, env_name) in input_enviroments {
         println!("------------------ NOW ENVIROMENT {} ------------------", env_name);
+        let options = options.clone();
+        let command = command.clone();
+        let original_cf_home = original_cf_home.clone();
+        let mcf_folder = mcf_folder.clone();
         let child: tokio::process::Child = child_tokio(
-            &options.cf_binary_name,
+            options,
             command,
             &env_name,
             original_cf_home,
@@ -89,6 +65,38 @@ pub async fn exec_sequential(
         )?;
         child.wait_with_output().await?;
     }
+    Ok(())
+}
+
+async fn exec_parallel(
+    settings: &Settings,
+    options: Arc<Options>,
+    names: &String,
+    command: Arc<Vec<String>>,
+    original_cf_home: Arc<PathBuf>,
+    mcf_folder: Arc<PathBuf>,
+) -> Result<()> {
+    let input_enviroments = input_enviroments(names, settings);
+    check_if_all_enviroments_are_known(&input_enviroments, settings)?;
+    let mut tasks: Vec<JoinHandle<Result<()>>> = vec![];
+    for (_env, env_name) in input_enviroments {
+        let options = options.clone();
+        let command = command.clone();
+        let original_cf_home = original_cf_home.clone();
+        let mcf_folder = mcf_folder.clone();
+        tasks.push(tokio::spawn(async move {
+            let child: tokio::process::Child = child_tokio(
+                options,
+                command,
+                &env_name,
+                original_cf_home,
+                mcf_folder,
+            )?;
+            child.wait_with_output().await?;
+            Ok(())
+        }));
+    }
+    future::join_all(tasks).await;
     Ok(())
 }
 
