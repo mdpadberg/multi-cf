@@ -1,10 +1,10 @@
-use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
-use std::process::{ChildStderr, ChildStdout};
 use std::sync::Arc;
+
 use anyhow::{bail, Context, Result};
 use futures::future;
 use tokio::task::JoinHandle;
+
 use crate::cf::{CFSubCommandsThatRequireSequentialMode, child_tokio};
 use crate::environment::Environment;
 use crate::options::Options;
@@ -48,10 +48,10 @@ async fn exec_sequential(
     original_cf_home: Arc<PathBuf>,
     mcf_folder: Arc<PathBuf>,
 ) -> Result<()> {
-    let input_enviroments = input_enviroments(names, settings);
-    check_if_all_enviroments_are_known(&input_enviroments, settings)?;
-    for (_env, env_name) in input_enviroments {
-        println!("------------------ NOW ENVIROMENT {} ------------------", env_name);
+    let input_environments = input_environments(names, settings);
+    check_if_all_environments_are_known(&input_environments, settings)?;
+    for (_env, env_name) in input_environments {
+        println!("------------------ NOW ENVIRONMENT {} ------------------", env_name);
         let options = options.clone();
         let command = command.clone();
         let original_cf_home = original_cf_home.clone();
@@ -76,10 +76,10 @@ async fn exec_parallel(
     original_cf_home: Arc<PathBuf>,
     mcf_folder: Arc<PathBuf>,
 ) -> Result<()> {
-    let input_enviroments = input_enviroments(names, settings);
-    check_if_all_enviroments_are_known(&input_enviroments, settings)?;
+    let input_environments = input_environments(names, settings);
+    check_if_all_environments_are_known(&input_environments, settings)?;
     let mut tasks: Vec<JoinHandle<Result<()>>> = vec![];
-    for (_env, env_name) in input_enviroments {
+    for (_env, env_name) in input_environments {
         let options = options.clone();
         let command = command.clone();
         let original_cf_home = original_cf_home.clone();
@@ -100,7 +100,7 @@ async fn exec_parallel(
     Ok(())
 }
 
-fn max_enviroment_name_length(input_enviroments: &Vec<(Option<Environment>, String)>) -> Result<usize, anyhow::Error> {
+fn max_environment_name_length(input_enviroments: &Vec<(Option<Environment>, String)>) -> Result<usize, anyhow::Error> {
     Ok(input_enviroments
         .iter()
         .map(|(_env, env_name)| env_name.len())
@@ -108,7 +108,7 @@ fn max_enviroment_name_length(input_enviroments: &Vec<(Option<Environment>, Stri
         .context("environment name should have length")?)
 }
 
-fn check_if_all_enviroments_are_known(input_enviroments: &Vec<(Option<Environment>, String)>, settings: &Settings) -> Result<()> {
+fn check_if_all_environments_are_known(input_enviroments: &Vec<(Option<Environment>, String)>, settings: &Settings) -> Result<()> {
     for env in input_enviroments.iter() {
         if env.0.is_none() {
             bail!(
@@ -121,7 +121,7 @@ fn check_if_all_enviroments_are_known(input_enviroments: &Vec<(Option<Environmen
     Ok(())
 }
 
-fn input_enviroments(names: &String, settings: &Settings) -> Vec<(Option<Environment>, String)> {
+fn input_environments(names: &String, settings: &Settings) -> Vec<(Option<Environment>, String)> {
     names
         .split(',')
         .map(|s| s.to_string())
@@ -129,78 +129,155 @@ fn input_enviroments(names: &String, settings: &Settings) -> Vec<(Option<Environ
         .collect::<Vec<(Option<Environment>, String)>>()
 }
 
-async fn print_stdout(env_name: String, whitespace: String, stdout: ChildStdout) -> Result<()> {
-    BufReader::new(stdout)
-        .lines()
-        .filter_map(|line| line.ok())
-        .for_each(|line| println!("{}{}| {}", env_name, whitespace, line));
-    Ok(())
-}
+#[cfg(test)]
+mod tests {
+    use std::io::Read;
 
-async fn bail_if_stderr_contains_interactive_mode_error(stderr: ChildStderr) -> Result<()> {
-    for line in BufReader::new(stderr).lines() {
-        if line.is_ok() && line?.contains("inappropriate ioctl for device") {
-            bail!("We need to switch to interactive mode")
-        }
+    use gag::BufferRedirect;
+    use tempfile::tempdir;
+
+    use super::*;
+
+    #[tokio::test]
+    async fn test_exec_could_not_find_env_in_list() {
+        let tempdir: PathBuf = tempdir().unwrap().into_path();
+        let result = exec(
+            &Settings {
+                environments: vec![Environment {
+                    name: "p01".to_string(),
+                    url: "url".to_string(),
+                    sso: false,
+                    skip_ssl_validation: false,
+                }],
+            },
+            Arc::new(Options {
+                cf_binary_name: String::from("echo"),
+                mcf_home: tempdir.to_str().unwrap().to_string(),
+            }),
+            &String::from("p01,p02"),
+            Arc::new(vec![String::from("")]),
+            Arc::new(PathBuf::from("")),
+            Arc::new(PathBuf::from("")),
+            &false
+        ).await;
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err().to_string(),
+            "could not find \"p02\" in environment list [\n    Environment {\n        name: \"p01\",\n        url: \"url\",\n        sso: false,\n        skip_ssl_validation: false,\n    },\n]"
+        );
     }
-    Ok(())
+
+    #[tokio::test]
+    async fn test_exec_environment_should_have_length() {
+        let tempdir: PathBuf = tempdir().unwrap().into_path();
+        let _ = std::fs::create_dir_all(tempdir.join(".cf").join("plugins"));
+        let result = exec(
+            &Settings {
+                environments: vec![Environment {
+                    name: "p01".to_string(),
+                    url: "url".to_string(),
+                    sso: false,
+                    skip_ssl_validation: false,
+                }],
+            },
+            Arc::new(Options {
+                cf_binary_name: String::from("echo"),
+                mcf_home: tempdir.to_str().unwrap().to_string(),
+            }),
+            &String::from("p01"),
+            Arc::new(vec![String::from("hello")]),
+            Arc::new(tempdir.join(".cf")),
+            Arc::new(tempdir.join("test-exec-environment-should-have-length")),
+            &false
+        ).await;
+        assert!(result.is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_exec() {
+        /// test_if_run_in_sequential_mode_when_boolean_is_true
+        let mut buf = BufferRedirect::stdout().unwrap();
+        let tempdir: PathBuf = tempdir().unwrap().into_path();
+        let _ = std::fs::create_dir_all(tempdir.join(".cf").join("plugins"));
+        let result = exec(
+            &Settings {
+                environments: vec![Environment {
+                    name: "p01".to_string(),
+                    url: "url".to_string(),
+                    sso: false,
+                    skip_ssl_validation: false,
+                }],
+            },
+            Arc::new(Options {
+                cf_binary_name: String::from("echo"),
+                mcf_home: tempdir.to_str().unwrap().to_string(),
+            }),
+            &String::from("p01"),
+            Arc::new(vec![String::from("hello")]),
+            Arc::new(tempdir.join(".cf")),
+            Arc::new(tempdir.join("test-exec-environment-should-have-length")),
+            &true
+        ).await;
+        assert!(result.is_ok());
+        let mut output = String::new();
+        buf.read_to_string(&mut output).unwrap();
+        drop(buf);
+        assert!(output.contains("------------------ NOW ENVIRONMENT p01 ------------------\n"));
+
+        /// test_if_run_in_sequential_mode_when_boolean_is_false_but_command_is_in_enum_list
+        let mut buf = BufferRedirect::stdout().unwrap();
+        let _ = std::fs::create_dir_all(tempdir.join(".cf").join("plugins"));
+        let result = exec(
+            &Settings {
+                environments: vec![Environment {
+                    name: "p01".to_string(),
+                    url: "url".to_string(),
+                    sso: false,
+                    skip_ssl_validation: false,
+                }],
+            },
+            Arc::new(Options {
+                cf_binary_name: String::from("echo"),
+                mcf_home: tempdir.to_str().unwrap().to_string(),
+            }),
+            &String::from("p01"),
+            Arc::new(vec![String::from("Delete")]),
+            Arc::new(tempdir.join(".cf")),
+            Arc::new(tempdir.join("test-exec-environment-should-have-length")),
+            &false
+        ).await;
+        assert!(result.is_ok());
+        let mut output = String::new();
+        buf.read_to_string(&mut output).unwrap();
+        drop(buf);
+        assert!(output.contains("------------------ NOW ENVIRONMENT p01 ------------------\n"));
+
+        /// test_if_run_in_parallel_mode
+        let mut buf = BufferRedirect::stdout().unwrap();
+        let _ = std::fs::create_dir_all(tempdir.join(".cf").join("plugins"));
+        let result = exec(
+            &Settings {
+                environments: vec![Environment {
+                    name: "p01".to_string(),
+                    url: "url".to_string(),
+                    sso: false,
+                    skip_ssl_validation: false,
+                }],
+            },
+            Arc::new(Options {
+                cf_binary_name: String::from("echo"),
+                mcf_home: tempdir.to_str().unwrap().to_string(),
+            }),
+            &String::from("p01"),
+            Arc::new(vec![String::from("Hello")]),
+            Arc::new(tempdir.join(".cf")),
+            Arc::new(tempdir.join("test-exec-environment-should-have-length")),
+            &false
+        ).await;
+        assert!(result.is_ok());
+        let mut output = String::new();
+        buf.read_to_string(&mut output).unwrap();
+        drop(buf);
+        assert!(!output.contains("------------------ NOW ENVIRONMENT p01 ------------------\n"));
+    }
 }
-
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-//     use tempfile::tempdir;
-
-//     #[test]
-//     fn test_exec_could_not_find_env_in_list() {
-//         let tempdir: PathBuf = tempdir().unwrap().into_path();
-//         let result = exec(
-//             &Settings {
-//                 environments: vec![Environment {
-//                     name: "p01".to_string(),
-//                     url: "url".to_string(),
-//                     sso: false,
-//                     skip_ssl_validation: false,
-//                 }],
-//             },
-//             &Options {
-//                 cf_binary_name: String::from("echo"),
-//                 mcf_home: tempdir.to_str().unwrap().to_string(),
-//             },
-//             &String::from("p01,p02"),
-//             &vec![String::from("")],
-//             &PathBuf::from(""),
-//             &PathBuf::from(""),
-//         );
-//         assert!(result.is_err());
-//         assert_eq!(
-//             result.unwrap_err().to_string(),
-//             "could not find \"p02\" in environment list [\n    Environment {\n        name: \"p01\",\n        url: \"url\",\n        sso: false,\n        skip_ssl_validation: false,\n    },\n]"
-//         );
-//     }
-
-//     #[test]
-//     fn test_exec_environment_should_have_length() {
-//         let tempdir: PathBuf = tempdir().unwrap().into_path();
-//         let _ = std::fs::create_dir_all(tempdir.join(".cf").join("plugins"));
-//         let result = exec(
-//             &Settings {
-//                 environments: vec![Environment {
-//                     name: "p01".to_string(),
-//                     url: "url".to_string(),
-//                     sso: false,
-//                     skip_ssl_validation: false,
-//                 }],
-//             },
-//             &Options {
-//                 cf_binary_name: String::from("echo"),
-//                 mcf_home: tempdir.to_str().unwrap().to_string(),
-//             },
-//             &String::from("p01"),
-//             &vec![String::from("hello")],
-//             &tempdir.join(".cf"),
-//             &tempdir.join("test-exec-environment-should-have-length"),
-//         );
-//         assert!(result.is_ok());
-//     }
-// }
