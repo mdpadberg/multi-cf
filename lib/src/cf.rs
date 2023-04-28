@@ -1,5 +1,6 @@
 use std::path::Path;
 use std::path::PathBuf;
+use std::process::Stdio;
 use std::sync::Arc;
 
 use anyhow::{bail, Context, Result};
@@ -57,12 +58,15 @@ pub fn child_tokio(
     env_name: &String,
     original_cf_home: Arc<PathBuf>,
     mcf_folder: Arc<PathBuf>,
+    sequential_mode: &bool,
 ) -> Result<tokio::process::Child> {
     prepare_plugins(env_name, &original_cf_home, &mcf_folder)?;
-    Ok(cf_command_tokio(&options.cf_binary_name, env_name, &mcf_folder)
-        .args(command.to_vec())
-        .spawn()
-        .context("Could not spawn")?)
+    let mut tokio_command = cf_command_tokio(&options.cf_binary_name, env_name, &mcf_folder);
+    tokio_command.args(command.to_vec());
+    if !sequential_mode {
+        tokio_command.stdout(Stdio::piped());
+    }
+    Ok(tokio_command.spawn().context("Could not spawn")?)
 }
 
 pub fn cf_command_tokio(cf_binary_name: &String, name: &String, mcf_folder: &PathBuf) -> Command {
@@ -113,10 +117,10 @@ fn create_symlink<P: AsRef<Path>, Q: AsRef<Path>>(source: P, destination: Q) -> 
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+    use crate::environment::Environment;
     use std::ffi::OsStr;
     use tempfile::tempdir;
-    use crate::environment::Environment;
-    use super::*;
 
     #[test]
     fn test_cf_command() {
@@ -143,11 +147,11 @@ mod tests {
                 .filter(|value| value.is_some())
                 .filter(|value| value.unwrap().to_str().unwrap()
                     == tempdir
-                    .join("mcf-lib-test")
-                    .join("homes")
-                    .join("envname")
-                    .to_str()
-                    .unwrap())
+                        .join("mcf-lib-test")
+                        .join("homes")
+                        .join("envname")
+                        .to_str()
+                        .unwrap())
                 .collect::<Vec<Option<&OsStr>>>()
                 .len(),
             1
@@ -166,8 +170,8 @@ mod tests {
             "homes",
             &String::from("envname"),
         ]
-            .iter()
-            .collect::<PathBuf>();
+        .iter()
+        .collect::<PathBuf>();
         assert_eq!(result, expected);
     }
 
@@ -199,7 +203,7 @@ mod tests {
                     .join(".cf")
                     .join("plugins")
             )
-                .unwrap(),
+            .unwrap(),
             tempdir.join(".cf").join("plugins")
         );
         assert!(
@@ -211,11 +215,11 @@ mod tests {
                     .join(".cf")
                     .join("plugins")
             )
-                .unwrap()
-                .into_iter()
-                .map(|path| String::from(path.unwrap().file_name().to_str().unwrap()))
-                .filter(|file| file == &"test-file")
-                .count()
+            .unwrap()
+            .into_iter()
+            .map(|path| String::from(path.unwrap().file_name().to_str().unwrap()))
+            .filter(|file| file == &"test-file")
+            .count()
                 == 1
         );
     }
@@ -246,8 +250,8 @@ mod tests {
                 &String::from("envname"),
                 &tempdir.join("mcf-lib-home"),
             )
-                .join(".cf")
-                .join("plugins"),
+            .join(".cf")
+            .join("plugins"),
         );
         let result = prepare_plugins(
             &String::from("envname"),
@@ -273,7 +277,7 @@ mod tests {
             &String::from("envname"),
             &tempdir.join("mcf-lib-home"),
         )
-            .join(".cf");
+        .join(".cf");
         let _ = std::fs::create_dir_all(&folder);
         let _ = std::fs::File::create(&folder.join("plugins"));
         let result = prepare_plugins(

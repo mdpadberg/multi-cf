@@ -3,6 +3,7 @@ use std::sync::Arc;
 
 use anyhow::{bail, Context, Result};
 use futures::future;
+use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::task::JoinHandle;
 
 use crate::cf::{child_tokio, CFSubCommandsThatRequireSequentialMode};
@@ -64,7 +65,7 @@ async fn exec_sequential(
         let original_cf_home = original_cf_home.clone();
         let mcf_folder = mcf_folder.clone();
         let child: tokio::process::Child =
-            child_tokio(options, command, &env_name, original_cf_home, mcf_folder)?;
+            child_tokio(options, command, &env_name, original_cf_home, mcf_folder, &true)?;
         child.wait_with_output().await?;
     }
     Ok(())
@@ -81,15 +82,22 @@ async fn exec_parallel(
     let input_environments = input_environments(names, settings);
     check_if_all_environments_are_known(&input_environments, settings)?;
     let mut tasks: Vec<JoinHandle<Result<()>>> = vec![];
+    let max_chars = max_environment_name_length(&input_environments)?;
     for (_env, env_name) in input_environments {
         let options = options.clone();
         let command = command.clone();
         let original_cf_home = original_cf_home.clone();
         let mcf_folder = mcf_folder.clone();
         tasks.push(tokio::spawn(async move {
+            let whitespace_length = max_chars - env_name.len();
+            let whitespace = (0..=whitespace_length).map(|_| " ").collect::<String>();
             let child: tokio::process::Child =
-                child_tokio(options, command, &env_name, original_cf_home, mcf_folder)?;
-            child.wait_with_output().await?;
+                child_tokio(options, command, &env_name, original_cf_home, mcf_folder, &false)?;
+            let stdout = child.stdout.context("exec: no stdout")?;
+            let mut lines = BufReader::new(stdout).lines();
+            while let Some(line) = lines.next_line().await? {
+                println!("{}{}| {}", &env_name, whitespace, line);
+            }
             Ok(())
         }));
     }
@@ -98,9 +106,9 @@ async fn exec_parallel(
 }
 
 fn max_environment_name_length(
-    input_enviroments: &Vec<(Option<Environment>, String)>,
+    input_environments: &Vec<(Option<Environment>, String)>,
 ) -> Result<usize, anyhow::Error> {
-    Ok(input_enviroments
+    Ok(input_environments
         .iter()
         .map(|(_env, env_name)| env_name.len())
         .max()
@@ -108,10 +116,10 @@ fn max_environment_name_length(
 }
 
 fn check_if_all_environments_are_known(
-    input_enviroments: &Vec<(Option<Environment>, String)>,
+    input_environments: &Vec<(Option<Environment>, String)>,
     settings: &Settings,
 ) -> Result<()> {
-    for env in input_enviroments.iter() {
+    for env in input_environments.iter() {
         if env.0.is_none() {
             bail!(
                 "could not find {:#?} in environment list {:#?}",
@@ -232,6 +240,7 @@ mod tests {
         let mut output = String::new();
         buf.read_to_string(&mut output).unwrap();
         drop(buf);
+        assert!(!output.contains("p01 | \n"));
         assert!(output.contains("------------------ NOW ENVIRONMENT p01 ------------------\n"));
     }
 
@@ -263,6 +272,7 @@ mod tests {
         let mut output = String::new();
         buf.read_to_string(&mut output).unwrap();
         drop(buf);
+        assert!(!output.contains("p01 | \n"));
         assert!(output.contains("------------------ NOW ENVIRONMENT p01 ------------------\n"));
     }
 
@@ -295,5 +305,6 @@ mod tests {
         buf.read_to_string(&mut output).unwrap();
         drop(buf);
         assert!(!output.contains("------------------ NOW ENVIRONMENT p01 ------------------\n"));
+        assert!(output.contains("p01 | Hello\n"));
     }
 }
