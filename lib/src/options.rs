@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 
+#[derive(Debug, Clone)]
 pub struct Options {
     pub cf_binary_name: String,
     pub mcf_home: String,

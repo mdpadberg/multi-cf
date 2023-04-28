@@ -1,9 +1,11 @@
 use crate::{environment, subcommands::Subcommands};
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use clap::{CommandFactory, Parser};
 use clap_complete::{generate, Generator};
-use lib::{cf::login, exec::exec, options::Options, settings::Settings};
-use std::{io, path::PathBuf};
+use lib::{
+    cf::login, exec::exec, options::Options, settings::Settings,
+};
+use std::{io, path::PathBuf, sync::Arc};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -22,7 +24,7 @@ struct Mcf {
     cf_binary_name: Option<String>,
 }
 
-pub fn parse() -> Result<()> {
+pub async fn parse() -> Result<()> {
     let mcf: Mcf = Mcf::parse();
 
     let options = Options::new(mcf.cf_binary_name, mcf.override_path);
@@ -35,16 +37,22 @@ pub fn parse() -> Result<()> {
         Subcommands::Login { name } => {
             login(&settings, &options, name, &PathBuf::from(&options.mcf_home))
         }
-        Subcommands::Exec { names, command } => exec(
-            &settings,
-            &options,
-            names,
-            command,
-            &dirs::home_dir()
-                .context("Could not find home dir")?
-                .join(".cf"),
-            &PathBuf::from(&options.mcf_home),
-        ),
+        Subcommands::Exec { names, command, sequential_mode } => {
+            exec(
+                &settings,
+                Arc::new(options.clone()),
+                names,
+                Arc::new(command.to_vec()),
+                Arc::new(
+                    dirs::home_dir()
+                        .context("Could not find home dir")?
+                        .join(".cf"),
+                ),
+                Arc::new(PathBuf::from(options.mcf_home)),
+                sequential_mode
+            )
+            .await
+        }
         Subcommands::Completion { shell } => {
             let mut cmd = Mcf::command();
             eprintln!("Generating completion file for {:?}...", shell);

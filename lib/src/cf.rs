@@ -1,11 +1,28 @@
+use std::path::Path;
+use std::path::PathBuf;
+use std::process::Stdio;
+use std::sync::Arc;
+
+use anyhow::{bail, Context, Result};
+use strum::{AsRefStr, EnumIter, IntoEnumIterator};
+use tokio::process::Command;
+
 use crate::options::Options;
 use crate::settings::Settings;
-use anyhow::{bail, Context, Result};
-use std::path::Path;
-use std::{
-    path::PathBuf,
-    process::{self, Command, Stdio},
-};
+
+#[derive(Debug, EnumIter, AsRefStr)]
+pub enum CFSubCommandsThatRequireSequentialMode {
+    Ssh,
+    Delete,
+}
+
+impl CFSubCommandsThatRequireSequentialMode {
+    pub fn check_if_contains(input: String) -> bool {
+        let input_lowercase = input.to_lowercase();
+        CFSubCommandsThatRequireSequentialMode::iter()
+            .any(|cfsubcommand| input_lowercase.contains(&cfsubcommand.as_ref().to_lowercase()))
+    }
+}
 
 pub fn login(
     settings: &Settings,
@@ -15,7 +32,7 @@ pub fn login(
 ) -> Result<()> {
     if let Some(some) = settings.environments.iter().find(|env| &env.name == name) {
         let cf_binary_name = &options.cf_binary_name;
-        let mut cf: Command = cf_command(cf_binary_name, &some.name, mcf_home);
+        let mut cf: Command = cf_command_tokio(cf_binary_name, &some.name, mcf_home);
         cf.arg("login").arg("-a").arg(&some.url);
         if some.skip_ssl_validation {
             cf.arg("--skip-ssl-validation");
@@ -35,24 +52,24 @@ pub fn login(
     Ok(())
 }
 
-pub fn stdout(
-    cf_binary_name: &String,
-    command: &Vec<String>,
+pub fn child_tokio(
+    options: Arc<Options>,
+    command: Arc<Vec<String>>,
     env_name: &String,
-    original_cf_home: &PathBuf,
-    mcf_folder: &PathBuf,
-) -> Result<process::ChildStdout> {
-    prepare_plugins(env_name, original_cf_home, mcf_folder)?;
-    Ok(cf_command(cf_binary_name, env_name, mcf_folder)
-        .args(command)
-        .stdout(Stdio::piped())
-        .spawn()
-        .context("Could not spawn")?
-        .stdout
-        .context("Could get stdout")?)
+    original_cf_home: Arc<PathBuf>,
+    mcf_folder: Arc<PathBuf>,
+    sequential_mode: &bool,
+) -> Result<tokio::process::Child> {
+    prepare_plugins(env_name, &original_cf_home, &mcf_folder)?;
+    let mut tokio_command = cf_command_tokio(&options.cf_binary_name, env_name, &mcf_folder);
+    tokio_command.args(command.to_vec());
+    if !sequential_mode {
+        tokio_command.stdout(Stdio::piped());
+    }
+    Ok(tokio_command.spawn().context("Could not spawn")?)
 }
 
-pub fn cf_command(cf_binary_name: &String, name: &String, mcf_folder: &PathBuf) -> Command {
+pub fn cf_command_tokio(cf_binary_name: &String, name: &String, mcf_folder: &PathBuf) -> Command {
     let mut cf: Command = Command::new(cf_binary_name);
     let cf_home: PathBuf = get_cf_home_from_mcf_environment(name, mcf_folder);
     cf.env("CF_HOME", cf_home);
@@ -100,23 +117,23 @@ fn create_symlink<P: AsRef<Path>, Q: AsRef<Path>>(source: P, destination: Q) -> 
 
 #[cfg(test)]
 mod tests {
-    use crate::environment::Environment;
-
     use super::*;
+    use crate::environment::Environment;
     use std::ffi::OsStr;
     use tempfile::tempdir;
 
     #[test]
     fn test_cf_command() {
         let tempdir: PathBuf = tempdir().unwrap().into_path();
-        let result = cf_command(
+        let result = cf_command_tokio(
             &String::from("echo"),
             &String::from("envname"),
             &tempdir.join("mcf-lib-test"),
         );
-        assert_eq!(result.get_program().to_str().unwrap(), "echo");
+        assert_eq!(result.as_std().get_program().to_str().unwrap(), "echo");
         assert_eq!(
             result
+                .as_std()
                 .get_envs()
                 .map(|(key, _)| key)
                 .collect::<Vec<&OsStr>>(),
@@ -124,6 +141,7 @@ mod tests {
         );
         assert_eq!(
             result
+                .as_std()
                 .get_envs()
                 .map(|(_, value)| value)
                 .filter(|value| value.is_some())
@@ -300,8 +318,8 @@ mod tests {
         assert_eq!(result.unwrap_err().to_string(), "could not find \"p02\" in environment list [\n    Environment {\n        name: \"p01\",\n        url: \"url\",\n        sso: false,\n        skip_ssl_validation: false,\n    },\n]");
     }
 
-    #[test]
-    fn test_login_happy_case() {
+    #[tokio::test]
+    async fn test_login_happy_case() {
         let tempdir: PathBuf = tempdir().unwrap().into_path();
         let result = login(
             &Settings {

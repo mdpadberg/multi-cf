@@ -22,6 +22,9 @@ pub enum Subcommands {
         names: String,
         /// Command you want to execute (example "logs your-application --recent")
         command: Vec<String>,
+        /// Execute command sequentially (example "ssh your-application")
+        #[clap(short, long)]
+        sequential_mode: bool
     },
     /// Generate shell autocompletion files
     Completion {
