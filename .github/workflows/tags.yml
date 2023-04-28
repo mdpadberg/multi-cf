@@ -111,34 +111,34 @@ jobs:
         git config --global user.email '43384430+mdpadberg@users.noreply.github.com'
         git add **/Cargo.toml
         git commit -m "version bump to ${{ env.RELEASE_VERSION }}"
-        git push
+        git push 
   trigger_homebrew_tap:
     name: Trigger homebrew-tap
     needs: [build_release]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.PAT_TOKEN }}
-          script: |
-            await github.rest.actions.createWorkflowDispatch({
-              owner: 'mdpadberg',
-              repo: 'homebrew-tap',
-              workflow_id: 'create-mcf-rb.yml',
-              ref: 'main'
-            })
+    - uses: actions/github-script@v6
+      with:
+        github-token: ${{ secrets.PAT_TOKEN }}
+        script: |
+          await github.rest.actions.createWorkflowDispatch({
+            owner: 'mdpadberg',
+            repo: 'homebrew-tap',
+            workflow_id: 'create-mcf-rb.yml',
+            ref: 'main'
+          })
   trigger_scoop_bucket:
     name: Trigger scoop-bucket
     needs: [build_release]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.PAT_TOKEN }}
-          script: |
-            await github.rest.actions.createWorkflowDispatch({
-              owner: 'mdpadberg',
-              repo: ' scoop-bucket',
-              workflow_id: 'create-mcf-json.yml',
-              ref: 'main'
-            })
+    - uses: actions/github-script@v6
+      with:
+        github-token: ${{ secrets.PAT_TOKEN }}
+        script: |
+          await github.rest.actions.createWorkflowDispatch({
+            owner: 'mdpadberg',
+            repo: ' scoop-bucket',
+            workflow_id: 'create-mcf-json.yml',
+            ref: 'main'
+          })
