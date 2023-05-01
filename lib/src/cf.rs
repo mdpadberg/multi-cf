@@ -24,7 +24,7 @@ impl CFSubCommandsThatRequireSequentialMode {
     }
 }
 
-pub fn login(
+pub async fn login(
     settings: &Settings,
     options: &Options,
     name: &String,
@@ -40,8 +40,8 @@ pub fn login(
         if some.sso {
             cf.arg("--sso");
         }
-        let mut child = cf.spawn().expect("Failure in creating child process");
-        let _ = child.wait();
+        let child = cf.spawn().expect("Failure in creating child process");
+        child.wait_with_output().await?;
     } else {
         bail!(
             "could not find {:#?} in environment list {:#?}",
@@ -295,8 +295,8 @@ mod tests {
             .is_symlink());
     }
 
-    #[test]
-    fn test_login_could_not_find_environment_in_list() {
+    #[tokio::test]
+    async fn test_login_could_not_find_environment_in_list() {
         let tempdir: PathBuf = tempdir().unwrap().into_path();
         let result = login(
             &Settings {
@@ -313,7 +313,7 @@ mod tests {
             },
             &String::from("p02"),
             &PathBuf::from(""),
-        );
+        ).await;
         assert!(result.is_err());
         assert_eq!(result.unwrap_err().to_string(), "could not find \"p02\" in environment list [\n    Environment {\n        name: \"p01\",\n        url: \"url\",\n        sso: false,\n        skip_ssl_validation: false,\n    },\n]");
     }
@@ -336,7 +336,7 @@ mod tests {
             },
             &String::from("p01"),
             &PathBuf::from(""),
-        );
+        ).await;
         assert!(result.is_ok());
     }
 }

@@ -35,7 +35,7 @@ pub async fn parse() -> Result<()> {
             environment_commands,
         } => environment::match_environment(&settings, &options, environment_commands),
         Subcommands::Login { name } => {
-            login(&settings, &options, name, &PathBuf::from(&options.mcf_home))
+            login(&settings, &options, name, &PathBuf::from(&options.mcf_home)).await
         }
         Subcommands::Exec { names, command, sequential_mode } => {
             exec(
