@@ -11,6 +11,8 @@ Start wiremock docker by running
 ```$ mitmweb```
 3. Set https_proxy to mitmweb
 ```$ export https_proxy=http://localhost:8080```
+4. Add the wiremock env to mcf
+```$ mcf env add wiremock http://localhost:8088 --sso --skip-ssl-validation```
 4. Run the command you want to capture, for example:
 ```$ mcf login wiremock```
 ```$ mcf exec wiremock apps```
