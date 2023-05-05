@@ -1,0 +1,19 @@
+{
+  "name": "spaces",
+  "request": {
+    "urlPathPattern": "/v3/spaces",
+    "queryParameters": {
+      "order_by": {
+        "equalTo": "name"
+      },
+      "organization_guids": {
+        "matches" : "(.*)"
+      }
+    },
+    "method": "GET"
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "v3-spaces.json"
+  }
+}

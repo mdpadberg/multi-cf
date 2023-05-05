@@ -1,0 +1,51 @@
+{
+  "links": {
+    "self": {
+      "href": "http://api.localhost:8088"
+    },
+    "cloud_controller_v2": {
+      "href": "http://api.localhost:8088/v2",
+      "meta": {
+        "version": "2.202.0"
+      }
+    },
+    "cloud_controller_v3": {
+      "href": "http://api.localhost:8088/v3",
+      "meta": {
+        "version": "3.137.0"
+      }
+    },
+    "network_policy_v0": {
+      "href": "http://api.localhost:8088/networking/v0/external"
+    },
+    "network_policy_v1": {
+      "href": "http://api.localhost:8088/networking/v1/external"
+    },
+    "login": {
+      "href": "http://localhost:8088"
+    },
+    "uaa": {
+      "href": "http://uaa.localhost:8088"
+    },
+    "credhub": null,
+    "routing": {
+      "href": "http://api.localhost:8088/routing"
+    },
+    "logging": {
+      "href": "wss://doppler.localhost:8088:443"
+    },
+    "log_cache": {
+      "href": "http://log-cache.localhost:8088"
+    },
+    "log_stream": {
+      "href": "http://log-stream.localhost:8088"
+    },
+    "app_ssh": {
+      "href": "ssh.localhost:2222",
+      "meta": {
+        "host_key_fingerprint": "awfwa1/ef2//jeaihfeaHFoeefahFEhofehfhEHHWgs",
+        "oauth_client": "ssh-proxy"
+      }
+    }
+  }
+}

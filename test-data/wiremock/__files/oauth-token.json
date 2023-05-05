@@ -1,0 +1,9 @@
+{
+  "access_token": "access_token",
+  "expires_in": 1199,
+  "id_token": "id_token",
+  "jti": "jti",
+  "refresh_token": "refresh_token",
+  "scope": "scope",
+  "token_type": "token_type"
+}
