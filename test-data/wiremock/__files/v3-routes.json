@@ -1,0 +1,124 @@
+{
+  "pagination": {
+    "first": {
+      "href": "http://localhost:8088/v3/routes?app_guids=c016fab7-e7a1-4877-aebe-5cfda703571e%2C8a20f259-3ba3-4844-a172-bee571a133d8&page=1&per_page=50"
+    },
+    "last": {
+      "href": "http://localhost:8088/v3/routes?app_guids=c016fab7-e7a1-4877-aebe-5cfda703571e%2C8a20f259-3ba3-4844-a172-bee571a133d8&page=1&per_page=50"
+    },
+    "next": null,
+    "previous": null,
+    "total_pages": 1,
+    "total_results": 2
+  },
+  "resources": [
+    {
+      "created_at": "2022-08-03T15:05:01Z",
+      "destinations": [
+        {
+          "app": {
+            "guid": "c016fab7-e7a1-4877-aebe-5cfda703571e",
+            "process": {
+              "type": "web"
+            }
+          },
+          "guid": "bad9d178-f383-4bdf-8d55-e1520e8fe6e6",
+          "port": 8080,
+          "protocol": "http1",
+          "weight": null
+        }
+      ],
+      "guid": "96852083-c3a9-424c-9668-8b30e0ddd78a",
+      "host": "frontend-statics",
+      "links": {
+        "destinations": {
+          "href": "http://localhost:8088/v3/routes/96852083-c3a9-424c-9668-8b30e0ddd78a/destinations"
+        },
+        "domain": {
+          "href": "http://localhost:8088/v3/domains/11561304-6a3c-4b07-8427-9954f6738df5"
+        },
+        "self": {
+          "href": "http://localhost:8088/v3/routes/96852083-c3a9-424c-9668-8b30e0ddd78a"
+        },
+        "space": {
+          "href": "http://localhost:8088/v3/spaces/b81d1072-4acb-44da-90c0-ef7f409f2add"
+        }
+      },
+      "metadata": {
+        "annotations": {},
+        "labels": {}
+      },
+      "path": "",
+      "port": null,
+      "protocol": "http",
+      "relationships": {
+        "domain": {
+          "data": {
+            "guid": "11561304-6a3c-4b07-8427-9954f6738df5"
+          }
+        },
+        "space": {
+          "data": {
+            "guid": "b81d1072-4acb-44da-90c0-ef7f409f2add"
+          }
+        }
+      },
+      "updated_at": "2022-08-03T15:05:01Z",
+      "url": "frontend-statics.aws.cloud"
+    },
+    {
+      "created_at": "2022-08-02T13:35:14Z",
+      "destinations": [
+        {
+          "app": {
+            "guid": "8a20f259-3ba3-4844-a172-bee571a133d8",
+            "process": {
+              "type": "web"
+            }
+          },
+          "guid": "9ba20576-8961-4f2b-84f9-33aac1cbb515",
+          "port": 8080,
+          "protocol": "http1",
+          "weight": null
+        }
+      ],
+      "guid": "015abb4e-de5b-41f1-b432-2cebb0b18682",
+      "host": "java-service",
+      "links": {
+        "destinations": {
+          "href": "http://localhost:8088/v3/routes/015abb4e-de5b-41f1-b432-2cebb0b18682/destinations"
+        },
+        "domain": {
+          "href": "http://localhost:8088/v3/domains/11561304-6a3c-4b07-8427-9954f6738df5"
+        },
+        "self": {
+          "href": "http://localhost:8088/v3/routes/015abb4e-de5b-41f1-b432-2cebb0b18682"
+        },
+        "space": {
+          "href": "http://localhost:8088/v3/spaces/b81d1072-4acb-44da-90c0-ef7f409f2add"
+        }
+      },
+      "metadata": {
+        "annotations": {},
+        "labels": {}
+      },
+      "path": "",
+      "port": null,
+      "protocol": "http",
+      "relationships": {
+        "domain": {
+          "data": {
+            "guid": "11561304-6a3c-4b07-8427-9954f6738df5"
+          }
+        },
+        "space": {
+          "data": {
+            "guid": "b81d1072-4acb-44da-90c0-ef7f409f2add"
+          }
+        }
+      },
+      "updated_at": "2022-08-02T13:35:14Z",
+      "url": "java-service.aws.cloud"
+    }
+  ]
+}

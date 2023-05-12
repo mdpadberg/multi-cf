@@ -1,0 +1,44 @@
+{
+  "resources": [
+    {
+      "details": null,
+      "disk_quota": 536870912,
+      "fds_quota": 16384,
+      "host": "10.0.88.89",
+      "index": 0,
+      "instance_ports": [
+        {
+          "external": 61044,
+          "external_tls_proxy_port": 61046,
+          "internal": 8080,
+          "internal_tls_proxy_port": 61001
+        },
+        {
+          "external": 61044,
+          "external_tls_proxy_port": null,
+          "internal": 8080,
+          "internal_tls_proxy_port": 61443
+        },
+        {
+          "external": 61045,
+          "external_tls_proxy_port": 61047,
+          "internal": 2222,
+          "internal_tls_proxy_port": 61002
+        }
+      ],
+      "isolation_segment": null,
+      "log_rate_limit": -1,
+      "mem_quota": 805306368,
+      "state": "RUNNING",
+      "type": "web",
+      "uptime": 82818,
+      "usage": {
+        "cpu": 0.001931781969657211,
+        "disk": 273207296,
+        "log_rate": 0,
+        "mem": 227644538,
+        "time": "2023-05-12T11:37:50+00:00"
+      }
+    }
+  ]
+}

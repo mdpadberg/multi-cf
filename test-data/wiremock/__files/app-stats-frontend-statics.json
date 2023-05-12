@@ -1,0 +1,84 @@
+{
+  "resources": [
+    {
+      "details": null,
+      "disk_quota": 1073741824,
+      "fds_quota": 16384,
+      "host": "10.0.88.88",
+      "index": 0,
+      "instance_ports": [
+        {
+          "external": 61092,
+          "external_tls_proxy_port": 61094,
+          "internal": 8080,
+          "internal_tls_proxy_port": 61001
+        },
+        {
+          "external": 61092,
+          "external_tls_proxy_port": null,
+          "internal": 8080,
+          "internal_tls_proxy_port": 61443
+        },
+        {
+          "external": 61093,
+          "external_tls_proxy_port": 61095,
+          "internal": 2222,
+          "internal_tls_proxy_port": 61002
+        }
+      ],
+      "isolation_segment": null,
+      "log_rate_limit": -1,
+      "mem_quota": 33554432,
+      "state": "RUNNING",
+      "type": "web",
+      "uptime": 601138,
+      "usage": {
+        "cpu": 0.001406646670527287,
+        "disk": 12427264,
+        "log_rate": 0,
+        "mem": 11827200,
+        "time": "2023-05-12T11:37:51+00:00"
+      }
+    },
+    {
+      "details": null,
+      "disk_quota": 1073741824,
+      "fds_quota": 16384,
+      "host": "10.0.44.22",
+      "index": 1,
+      "instance_ports": [
+        {
+          "external": 61064,
+          "external_tls_proxy_port": 61066,
+          "internal": 8080,
+          "internal_tls_proxy_port": 61001
+        },
+        {
+          "external": 61064,
+          "external_tls_proxy_port": null,
+          "internal": 8080,
+          "internal_tls_proxy_port": 61443
+        },
+        {
+          "external": 61065,
+          "external_tls_proxy_port": 61067,
+          "internal": 2222,
+          "internal_tls_proxy_port": 61002
+        }
+      ],
+      "isolation_segment": null,
+      "log_rate_limit": -1,
+      "mem_quota": 33554432,
+      "state": "RUNNING",
+      "type": "web",
+      "uptime": 601137,
+      "usage": {
+        "cpu": 0.001304999991149883,
+        "disk": 12427264,
+        "log_rate": 0,
+        "mem": 12021760,
+        "time": "2023-05-12T11:37:51+00:00"
+      }
+    }
+  ]
+}
