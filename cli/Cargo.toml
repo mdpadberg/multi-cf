@@ -12,9 +12,6 @@ lto = true
 [profile.dev]
 opt-level = 0
 
-# [features]
-# integration_tests = []
-
 [dependencies]
 clap = { version = "3.2.17", features = ["derive"] }
 clap_complete = "3.2.4"
