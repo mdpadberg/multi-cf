@@ -36,7 +36,7 @@ SUBCOMMANDS:
 
 #[cfg_attr(not(feature = "integration"), ignore)]
 #[test]
-fn can_run_login() -> Result<(), rexpect::error::Error> {
+fn can_run_login() {
     let mut add_env = Command::cargo_bin("mcf").unwrap();
     add_env.args(&["env", "add", "wiremock", "http://localhost:8088", "--sso", "--skip-ssl-validation"]);
     add_env.assert().success();
@@ -59,7 +59,6 @@ org:            cf-services
 space:          team-space
 "###;
     login.assert().stdout(expected);
-    Ok(())
 }
 
 #[cfg_attr(not(feature = "integration"), ignore)]
