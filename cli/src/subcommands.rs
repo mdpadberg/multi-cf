@@ -14,6 +14,15 @@ pub enum Subcommands {
     Login {
         /// Name of the environment (example "cf-dev")
         name: String,
+        /// One-time passcode
+        #[clap(long)]
+        sso_passcode: Option<String>,
+         /// Cloudfoundry organization
+        #[clap(short,long)]
+        org: Option<String>,
+         /// Cloudfoundry space
+        #[clap(short,long)]
+        space: Option<String>,
     },
     /// Execute command on Cloud Foundry environment
     #[clap(visible_alias = "e", trailing_var_arg = true)]

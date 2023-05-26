@@ -1,5 +1,5 @@
 use crate::{environment, subcommands::Subcommands};
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result};
 use clap::{CommandFactory, Parser};
 use clap_complete::{generate, Generator};
 use lib::{
@@ -34,8 +34,16 @@ pub async fn parse() -> Result<()> {
         Subcommands::Environment {
             environment_commands,
         } => environment::match_environment(&settings, &options, environment_commands),
-        Subcommands::Login { name } => {
-            login(&settings, &options, name, &PathBuf::from(&options.mcf_home)).await
+        Subcommands::Login { name, sso_passcode, org, space } => {
+            login(
+                &settings, 
+                &options, 
+                name, 
+                &PathBuf::from(&options.mcf_home),
+                sso_passcode,
+                org,
+                space
+            ).await
         }
         Subcommands::Exec { names, command, sequential_mode } => {
             exec(

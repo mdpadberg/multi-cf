@@ -8,3 +8,6 @@ edition = "2021"
 [dependencies]
 mcf = { path = "../cli" }
 assert_cmd = "2.0.11"
+
+[features]
+integration = []

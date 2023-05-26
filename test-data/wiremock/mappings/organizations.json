@@ -1,16 +1,37 @@
 {
-  "name": "organizations",
-  "request": {
-    "urlPathPattern": "/v3/organizations",
-    "queryParameters": {
-      "order_by": {
-        "equalTo": "name"
+  "mappings": [
+    {
+      "name": "organizations",
+      "request": {
+        "urlPathPattern": "/v3/organizations",
+        "queryParameters": {
+          "order_by": {
+            "equalTo": "name"
+          }
+        },
+        "method": "GET"
+      },
+      "response": {
+        "status": 200,
+        "bodyFileName": "v3-organizations.json"
       }
     },
-    "method": "GET"
-  },
-  "response": {
-    "status": 200,
-    "bodyFileName": "v3-organizations.json"
-  }
+    {
+      "name": "organizations",
+      "request": {
+        "urlPathPattern": "/v3/organizations",
+        "queryParameters": {
+          "names": {
+            "equalTo": "company-org"
+          }
+        },
+        "method": "GET"
+      },
+      "response": {
+        "status": 200,
+        "bodyFileName": "v3-organizations.json"
+      }
+    }
+  ]
 }
+
