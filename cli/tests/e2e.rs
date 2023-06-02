@@ -1,3 +1,5 @@
+use std::process::Stdio;
+
 use assert_cmd::Command;
 
 #[cfg_attr(not(feature = "integration"), ignore)]
@@ -85,6 +87,18 @@ space:          team-space
 #[cfg_attr(not(feature = "integration"), ignore)]
 #[test]
 fn can_run_exec() {
+    // TEMP FIX because this tests fails if there is no .plugin folder
+    // TODO: REMOVE WHEN https://github.com/mdpadberg/multi-cf/issues/10 IS IN PLACE
+    let cf = String::from_utf8(
+        std::process::Command::new("cf")
+            .stdout(Stdio::piped())
+            .spawn()
+            .unwrap()
+            .wait_with_output()
+            .unwrap()
+            .stdout)
+        .unwrap();
+    assert!(cf.contains("Cloud Foundry command line tool"));
     let mut add_env = Command::cargo_bin("mcf").unwrap();
     add_env.args(&[
         "env",
