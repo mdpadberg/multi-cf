@@ -9,7 +9,7 @@ RUN curl -L "https://packages.cloudfoundry.org/stable?release=linux64-binary&ver
 RUN mkdir cache
 RUN mkdir -p cache/cli/src
 RUN mkdir -p cache/lib/src
-COPY Cargo.toml Cargo.lock /cache
+COPY Cargo.toml /cache
 COPY cli/Cargo.toml /cache/cli
 COPY lib/Cargo.toml /cache/lib
 RUN \
