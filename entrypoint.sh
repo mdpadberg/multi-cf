@@ -1,2 +1,2 @@
 #!/bin/bash
-cargo test
+cargo test --features integration_test
