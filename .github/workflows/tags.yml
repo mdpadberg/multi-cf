@@ -37,6 +37,8 @@ jobs:
   integration-tests:
     name: run integration tests
     runs-on: ubuntu-latest
+    env:
+      DOCKER_BUILDKIT: 1
     steps:
       - uses: actions/checkout@v2
       - name: check out the source code
