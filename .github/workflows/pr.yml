@@ -1,23 +1,14 @@
-name: main-and-pr
+name: pr
 
 on:
-  push:
-    branches: 
-      - main
   pull_request:
-    types: [opened, synchronize, reopened, closed]
+    types: [opened, reopened]
     branches:
       - main
 
-env:
-  CARGO_TERM_COLOR: always
-  # (ugly) workaround to strip binary
-  # https://github.com/rust-lang/cargo/issues/3483#issuecomment-431209957
-  RUSTFLAGS: "-C link-arg=-s"
-
 jobs:
-  tests:
-    name: run tests
+  unit-tests:
+    name: run unit tests
     strategy:
       matrix:
         include:
@@ -44,3 +35,10 @@ jobs:
         target: ${{ matrix.rust-target }}
     - name: Run unit tests
       run: cargo test --verbose
+  integration-tests:
+    name: run integration tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: check out the source code
+        run: docker-compose up --exit-code-from mcf

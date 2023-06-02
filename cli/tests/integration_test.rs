@@ -2,7 +2,6 @@ use std::process::Stdio;
 
 use assert_cmd::Command;
 
-#[cfg_attr(not(feature = "integration"), ignore)]
 #[test]
 fn can_run_mcf() {
     let mut cmd = Command::cargo_bin("mcf").unwrap();
@@ -39,7 +38,6 @@ SUBCOMMANDS:
     cmd.assert().stdout(expected_output);
 }
 
-#[cfg_attr(not(feature = "integration"), ignore)]
 #[test]
 fn can_run_login() {
     let url = "http://localhost:8080";
@@ -84,7 +82,6 @@ space:          team-space
     login.assert().stdout(expected);
 }
 
-#[cfg_attr(not(feature = "integration"), ignore)]
 #[test]
 fn can_run_exec() {
     // TEMP FIX because this tests fails if there is no .plugin folder
