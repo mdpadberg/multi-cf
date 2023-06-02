@@ -2,9 +2,8 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use anyhow::{bail, Context, Result};
-use futures::future;
 use tokio::io::{AsyncBufReadExt, BufReader};
-use tokio::task::JoinHandle;
+use tokio::task::JoinSet;
 
 use crate::cf::{child_tokio, CFSubCommandsThatRequireSequentialMode};
 use crate::environment::Environment;
@@ -81,14 +80,14 @@ async fn exec_parallel(
 ) -> Result<()> {
     let input_environments = input_environments(names, settings);
     check_if_all_environments_are_known(&input_environments, settings)?;
-    let mut tasks: Vec<JoinHandle<Result<()>>> = vec![];
+    let mut tasks: JoinSet<Result<()>> = JoinSet::new();
     let max_chars = max_environment_name_length(&input_environments)?;
     for (_env, env_name) in input_environments {
         let options = options.clone();
         let command = command.clone();
         let original_cf_home = original_cf_home.clone();
         let mcf_folder = mcf_folder.clone();
-        tasks.push(tokio::spawn(async move {
+        tasks.spawn(async move {
             let whitespace_length = max_chars - env_name.len();
             let whitespace = (0..=whitespace_length).map(|_| " ").collect::<String>();
             let child: tokio::process::Child =
@@ -99,9 +98,11 @@ async fn exec_parallel(
                 println!("{}{}| {}", &env_name, whitespace, line);
             }
             Ok(())
-        }));
+        });
     }
-    future::join_all(tasks).await;
+    while let Some(result) = tasks.join_next().await {
+        result??;
+    }
     Ok(())
 }
 

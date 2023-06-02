@@ -4,6 +4,11 @@ services:
     image: wiremock/wiremock:2.32.0
     ports:
       - 8080:8080
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 1s
+      timeout: 1s
+      retries: 5
     volumes:
       - ./test-data/wiremock:/home/wiremock
     command: --no-request-journal --verbose --local-response-templating
@@ -12,7 +17,8 @@ services:
     environment:
       - CF_TRACE=false
     depends_on:
-      - wiremock
+      wiremock:
+        condition: service_healthy
     volumes:
       - $HOME/.cargo/registry:/usr/local/cargo/registry
     network_mode: service:wiremock
