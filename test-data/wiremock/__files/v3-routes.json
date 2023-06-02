@@ -1,10 +1,10 @@
 {
   "pagination": {
     "first": {
-      "href": "http://localhost:8088/v3/routes?app_guids=c016fab7-e7a1-4877-aebe-5cfda703571e%2C8a20f259-3ba3-4844-a172-bee571a133d8&page=1&per_page=50"
+      "href": "http://localhost:8080/v3/routes?app_guids=c016fab7-e7a1-4877-aebe-5cfda703571e%2C8a20f259-3ba3-4844-a172-bee571a133d8&page=1&per_page=50"
     },
     "last": {
-      "href": "http://localhost:8088/v3/routes?app_guids=c016fab7-e7a1-4877-aebe-5cfda703571e%2C8a20f259-3ba3-4844-a172-bee571a133d8&page=1&per_page=50"
+      "href": "http://localhost:8080/v3/routes?app_guids=c016fab7-e7a1-4877-aebe-5cfda703571e%2C8a20f259-3ba3-4844-a172-bee571a133d8&page=1&per_page=50"
     },
     "next": null,
     "previous": null,
@@ -32,16 +32,16 @@
       "host": "frontend-statics",
       "links": {
         "destinations": {
-          "href": "http://localhost:8088/v3/routes/96852083-c3a9-424c-9668-8b30e0ddd78a/destinations"
+          "href": "http://localhost:8080/v3/routes/96852083-c3a9-424c-9668-8b30e0ddd78a/destinations"
         },
         "domain": {
-          "href": "http://localhost:8088/v3/domains/11561304-6a3c-4b07-8427-9954f6738df5"
+          "href": "http://localhost:8080/v3/domains/11561304-6a3c-4b07-8427-9954f6738df5"
         },
         "self": {
-          "href": "http://localhost:8088/v3/routes/96852083-c3a9-424c-9668-8b30e0ddd78a"
+          "href": "http://localhost:8080/v3/routes/96852083-c3a9-424c-9668-8b30e0ddd78a"
         },
         "space": {
-          "href": "http://localhost:8088/v3/spaces/b81d1072-4acb-44da-90c0-ef7f409f2add"
+          "href": "http://localhost:8080/v3/spaces/b81d1072-4acb-44da-90c0-ef7f409f2add"
         }
       },
       "metadata": {
@@ -86,16 +86,16 @@
       "host": "java-service",
       "links": {
         "destinations": {
-          "href": "http://localhost:8088/v3/routes/015abb4e-de5b-41f1-b432-2cebb0b18682/destinations"
+          "href": "http://localhost:8080/v3/routes/015abb4e-de5b-41f1-b432-2cebb0b18682/destinations"
         },
         "domain": {
-          "href": "http://localhost:8088/v3/domains/11561304-6a3c-4b07-8427-9954f6738df5"
+          "href": "http://localhost:8080/v3/domains/11561304-6a3c-4b07-8427-9954f6738df5"
         },
         "self": {
-          "href": "http://localhost:8088/v3/routes/015abb4e-de5b-41f1-b432-2cebb0b18682"
+          "href": "http://localhost:8080/v3/routes/015abb4e-de5b-41f1-b432-2cebb0b18682"
         },
         "space": {
-          "href": "http://localhost:8088/v3/spaces/b81d1072-4acb-44da-90c0-ef7f409f2add"
+          "href": "http://localhost:8080/v3/spaces/b81d1072-4acb-44da-90c0-ef7f409f2add"
         }
       },
       "metadata": {

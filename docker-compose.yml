@@ -1,0 +1,18 @@
+version: "3.8"
+services:
+  wiremock:
+    image: wiremock/wiremock:2.32.0
+    ports:
+      - 8080:8080
+    volumes:
+      - ./test-data/wiremock:/home/wiremock
+    command: --no-request-journal --verbose --local-response-templating
+  mcf:
+    build: .
+    environment:
+      - CF_TRACE=false
+    depends_on:
+      - wiremock
+    volumes:
+      - $HOME/.cargo/registry:/usr/local/cargo/registry
+    network_mode: service:wiremock

@@ -3,10 +3,10 @@
     "total_results": 2,
     "total_pages": 1,
     "first": {
-      "href": "http://localhost:8088/v3/organizations?order_by=%2Bname\u0026page=1\u0026per_page=50"
+      "href": "http://localhost:8080/v3/organizations?order_by=%2Bname\u0026page=1\u0026per_page=50"
     },
     "last": {
-      "href": "http://localhost:8088/v3/organizations?order_by=%2Bname\u0026page=1\u0026per_page=50"
+      "href": "http://localhost:8080/v3/organizations?order_by=%2Bname\u0026page=1\u0026per_page=50"
     },
     "next": null,
     "previous": null
@@ -31,16 +31,16 @@
       },
       "links": {
         "self": {
-          "href": "http://localhost:8088/v3/organizations/bf0d7746-b8a4-4a50-9a0e-a5ac972a542e"
+          "href": "http://localhost:8080/v3/organizations/bf0d7746-b8a4-4a50-9a0e-a5ac972a542e"
         },
         "domains": {
-          "href": "http://localhost:8088/v3/organizations/bf0d7746-b8a4-4a50-9a0e-a5ac972a542e/domains"
+          "href": "http://localhost:8080/v3/organizations/bf0d7746-b8a4-4a50-9a0e-a5ac972a542e/domains"
         },
         "default_domain": {
-          "href": "http://localhost:8088/v3/organizations/bf0d7746-b8a4-4a50-9a0e-a5ac972a542e/domains/default"
+          "href": "http://localhost:8080/v3/organizations/bf0d7746-b8a4-4a50-9a0e-a5ac972a542e/domains/default"
         },
         "quota": {
-          "href": "http://localhost:8088/v3/organization_quotas/ebac37ad-2d7f-457d-80c3-f2ed9163885b"
+          "href": "http://localhost:8080/v3/organization_quotas/ebac37ad-2d7f-457d-80c3-f2ed9163885b"
         }
       }
     },
@@ -63,16 +63,16 @@
       },
       "links": {
         "self": {
-          "href": "http://localhost:8088/v3/organizations/da42fd9a-0e76-4a0f-9dd8-0179a4eddb9b"
+          "href": "http://localhost:8080/v3/organizations/da42fd9a-0e76-4a0f-9dd8-0179a4eddb9b"
         },
         "domains": {
-          "href": "http://localhost:8088/v3/organizations/da42fd9a-0e76-4a0f-9dd8-0179a4eddb9b/domains"
+          "href": "http://localhost:8080/v3/organizations/da42fd9a-0e76-4a0f-9dd8-0179a4eddb9b/domains"
         },
         "default_domain": {
-          "href": "http://localhost:8088/v3/organizations/da42fd9a-0e76-4a0f-9dd8-0179a4eddb9b/domains/default"
+          "href": "http://localhost:8080/v3/organizations/da42fd9a-0e76-4a0f-9dd8-0179a4eddb9b/domains/default"
         },
         "quota": {
-          "href": "http://localhost:8088/v3/organization_quotas/82a31857-65b1-4e4c-b63b-3b82869c93aa"
+          "href": "http://localhost:8080/v3/organization_quotas/82a31857-65b1-4e4c-b63b-3b82869c93aa"
         }
       }
     }

@@ -4,14 +4,14 @@
   },
   "showLoginLinks": true,
   "links": {
-    "uaa": "https://uaa.localhost:8088",
-    "login": "https://login.localhost:8088"
+    "uaa": "https://uaa.localhost:8080",
+    "login": "https://login.localhost:8080"
   },
   "zone_name": "uaa",
-  "entityID": "http://login.localhost:8088",
+  "entityID": "http://login.localhost:8080",
   "commit_id": "ad7df66",
   "idpDefinitions": {
-    "CompanySSO": "https://login.localhost:8088/saml/discovery?returnIDParam=idp&entityID=http://login.localhost:8088&idp=CompanySSO&isPassive=true"
+    "CompanySSO": "https://login.localhost:8080/saml/discovery?returnIDParam=idp&entityID=http://login.localhost:8080&idp=CompanySSO&isPassive=true"
   },
   "prompts": {
     "username": [
@@ -24,7 +24,7 @@
     ],
     "passcode": [
       "password",
-      "Temporary Authentication Code ( Get one at https://login.localhost:8088/passcode )"
+      "Temporary Authentication Code ( Get one at https://login.localhost:8080/passcode )"
     ]
   },
   "timestamp": "2023-04-20T12:35:45+0000"

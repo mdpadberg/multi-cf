@@ -4,9 +4,10 @@ use assert_cmd::Command;
 #[test]
 fn can_run_mcf() {
     let mut cmd = Command::cargo_bin("mcf").unwrap();
+    let version = env!("CARGO_PKG_VERSION");
     cmd.arg("-h");
     cmd.assert().success();
-    let expected_output = r###"mcf 0.14.1
+    let expected_output = format!(r###"mcf {}
 
 USAGE:
     mcf [OPTIONS] <SUBCOMMAND>
@@ -30,19 +31,37 @@ SUBCOMMANDS:
     exec           Execute command on Cloud Foundry environment [aliases: e]
     help           Print this message or the help of the given subcommand(s)
     login          Login to one of the Cloud Foundry environments [aliases: l]
-"###;
+"###,
+        version
+    );
     cmd.assert().stdout(expected_output);
 }
 
 #[cfg_attr(not(feature = "integration"), ignore)]
 #[test]
 fn can_run_login() {
+    let url = "http://localhost:8080";
     let mut add_env = Command::cargo_bin("mcf").unwrap();
-    add_env.args(&["env", "add", "wiremock", "http://localhost:8088", "--sso", "--skip-ssl-validation"]);
+    add_env.args(&[
+        "env",
+        "add",
+        "wiremock",
+        url,
+        "--sso",
+        "--skip-ssl-validation",
+    ]);
     add_env.assert().success();
     let mut login = Command::cargo_bin("mcf").unwrap();
-    login.args(&["login", "wiremock", "--sso-passcode", "super_secret_passcode", "-o", "company-org"]);
-    let expected = r###"API endpoint: http://localhost:8088
+    login.args(&[
+        "login",
+        "wiremock",
+        "--sso-passcode",
+        "super_secret_passcode",
+        "-o",
+        "company-org",
+    ]);
+    let expected = format!(
+        r###"API endpoint: {}
 
 Authenticating...
 OK
@@ -52,12 +71,14 @@ Targeted org cf-services.
 
 Targeted space team-space.
 
-API endpoint:   http://localhost:8088
+API endpoint:   {}
 API version:    3.137.0
 user:           email@company.com
 org:            cf-services
 space:          team-space
-"###;
+"###,
+        url, url
+    );
     login.assert().stdout(expected);
 }
 
@@ -65,10 +86,25 @@ space:          team-space
 #[test]
 fn can_run_exec() {
     let mut add_env = Command::cargo_bin("mcf").unwrap();
-    add_env.args(&["env", "add", "wiremock", "http://localhost:8088", "--sso", "--skip-ssl-validation"]);
+    add_env.args(&[
+        "env",
+        "add",
+        "wiremock",
+        "http://localhost:8080",
+        "--sso",
+        "--skip-ssl-validation",
+    ]);
     add_env.assert().success();
     let mut login = Command::cargo_bin("mcf").unwrap();
-    login.args(&["login", "wiremock", "--sso-passcode", "super_secret_passcode", "-o", "company-org"]);
+    login.args(&[
+        "login",
+        "wiremock",
+        "--sso-passcode",
+        "super_secret_passcode",
+        "-o",
+        "company-org",
+    ]);
+    login.assert().success();
     let mut cmd = Command::cargo_bin("mcf").unwrap();
     cmd.args(&["exec", "wiremock", "apps"]);
     cmd.assert().success();
