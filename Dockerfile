@@ -24,6 +24,7 @@ RUN \
 # COPY all the code to cache
 COPY cli/ /cache/cli
 COPY lib/ /cache/lib
+COPY entrypoint.sh /cache
 WORKDIR cache
 
 ENTRYPOINT ["./entrypoint.sh"]
