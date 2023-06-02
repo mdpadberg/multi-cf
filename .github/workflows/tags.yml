@@ -40,7 +40,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: check out the source code
-        run: docker-compose up --exit-code-from mcf
+        run: docker-compose up --exit-code-from mcf --build
   create_release:
     name: Create release
     runs-on: ubuntu-latest

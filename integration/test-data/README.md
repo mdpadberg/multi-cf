@@ -2,7 +2,7 @@
 
 ## Run stub with test-data
 1. Start wiremock docker by running this command in the root of this project:  
-```$ docker-compose up```
+```$ docker-compose up --build```
 2. Add wiremock to mcf list:  
 ```$ mcf env add wiremock http://localhost:8080 --sso --skip-ssl-validation```
 3. Run your test command, for example:  

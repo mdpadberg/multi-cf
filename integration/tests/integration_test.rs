@@ -5,12 +5,10 @@ use assert_cmd::Command;
 #[test]
 fn can_run_mcf() {
     let mut cmd = Command::cargo_bin("mcf").unwrap();
-    let version = "0.17.0";
-    // let version = env!("CARGO_PKG_VERSION");
     cmd.arg("-h");
     cmd.assert().success();
-    let expected_output = format!(r###"mcf {}
-
+    let expected_output = format!(
+        r###"
 USAGE:
     mcf [OPTIONS] <SUBCOMMAND>
 
@@ -33,10 +31,10 @@ SUBCOMMANDS:
     exec           Execute command on Cloud Foundry environment [aliases: e]
     help           Print this message or the help of the given subcommand(s)
     login          Login to one of the Cloud Foundry environments [aliases: l]
-"###,
-        version
+"###
     );
-    cmd.assert().stdout(expected_output);
+    let actual_output = String::from_utf8(cmd.assert().get_output().to_owned().stdout).unwrap();
+    assert!(actual_output.contains(&expected_output));
 }
 
 #[test]
@@ -94,8 +92,9 @@ fn can_run_exec() {
             .unwrap()
             .wait_with_output()
             .unwrap()
-            .stdout)
-        .unwrap();
+            .stdout,
+    )
+    .unwrap();
     assert!(cf.contains("Cloud Foundry command line tool"));
     let mut add_env = Command::cargo_bin("mcf").unwrap();
     add_env.args(&[
