@@ -10,7 +10,7 @@ services:
       timeout: 1s
       retries: 5
     volumes:
-      - ./test-data/wiremock:/home/wiremock
+      - ./integration/test-data/wiremock:/home/wiremock
     command: --no-request-journal --verbose --local-response-templating
   mcf:
     build: .
