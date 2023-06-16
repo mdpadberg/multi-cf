@@ -2,7 +2,10 @@
 Multi cf is a cli tool that can be used to execute commands on multiple cloud foundry environments at once.
 
 ## Contact
-Please check the [maintainers](./MAINTAINERS.md) to get in touch with us.
+Please check the [maintainers.md](./MAINTAINERS.md) to get in touch with us.
+
+## Tech
+Please check the [tech.md](./TECH.md) for all technical details on how to build, run, and run the tests of this project.
 
 ## Installation
 

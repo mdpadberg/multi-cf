@@ -1,9 +1,9 @@
 use crate::{environment, subcommands::Subcommands};
-use anyhow::{Context, Result};
+use anyhow::{Context, Result, bail};
 use clap::{CommandFactory, Parser};
 use clap_complete::{generate, Generator};
 use lib::{
-    cf::login, exec::exec, options::Options, settings::Settings,
+    cf::{login, check_if_cf_is_installed}, exec::exec, options::Options, settings::Settings,
 };
 use std::{io, path::PathBuf, sync::Arc};
 
@@ -35,6 +35,9 @@ pub async fn parse() -> Result<()> {
             environment_commands,
         } => environment::match_environment(&settings, &options, environment_commands),
         Subcommands::Login { name, sso_passcode, org, space } => {
+            if !check_if_cf_is_installed(&options.cf_binary_name)? {
+                bail!("mcf: could not find cf cli with binary name {}", &options.cf_binary_name);
+            };
             login(
                 &settings, 
                 &options, 
@@ -46,6 +49,9 @@ pub async fn parse() -> Result<()> {
             ).await
         }
         Subcommands::Exec { names, command, sequential_mode } => {
+            if !check_if_cf_is_installed(&options.cf_binary_name)? {
+                bail!("mcf: could not find cf cli with binary name {}", &options.cf_binary_name);
+            };
             exec(
                 &settings,
                 Arc::new(options.clone()),
