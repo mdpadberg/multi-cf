@@ -11,4 +11,4 @@ You can run this command in the root folder:
 
 ## How to test this project
 You can run this command in the root folder:  
-`docker-compose up`   
+`docker-compose up --exit-code-from mcf --build`   
