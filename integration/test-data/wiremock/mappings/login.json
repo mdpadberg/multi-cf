@@ -1,0 +1,11 @@
+{
+  "name": "login",
+  "request": {
+    "url": "/login",
+    "method": "GET"
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "login.json"
+  }
+}

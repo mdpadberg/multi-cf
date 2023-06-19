@@ -1,0 +1,156 @@
+{
+  "pagination": {
+    "first": {
+      "href": "http://localhost:8080/v3/apps?order_by=%2Bname&page=1&per_page=50&space_guids=b81d1072-4acb-44da-90c0-ef7f409f2add"
+    },
+    "last": {
+      "href": "http://localhost:8080/v3/apps?order_by=%2Bname&page=1&per_page=50&space_guids=b81d1072-4acb-44da-90c0-ef7f409f2add"
+    },
+    "next": null,
+    "previous": null,
+    "total_pages": 1,
+    "total_results": 11
+  },
+  "resources": [
+    {
+      "created_at": "2023-05-05T12:35:20Z",
+      "guid": "c016fab7-e7a1-4877-aebe-5cfda703571e",
+      "lifecycle": {
+        "data": {
+          "buildpacks": [
+            "nginx_buildpack"
+          ],
+          "stack": "cflinuxfs4"
+        },
+        "type": "buildpack"
+      },
+      "links": {
+        "current_droplet": {
+          "href": "http://localhost:8080/v3/apps/c016fab7-e7a1-4877-aebe-5cfda703571e/droplets/current"
+        },
+        "deployed_revisions": {
+          "href": "http://localhost:8080/v3/apps/c016fab7-e7a1-4877-aebe-5cfda703571e/revisions/deployed"
+        },
+        "droplets": {
+          "href": "http://localhost:8080/v3/apps/c016fab7-e7a1-4877-aebe-5cfda703571e/droplets"
+        },
+        "environment_variables": {
+          "href": "http://localhost:8080/v3/apps/c016fab7-e7a1-4877-aebe-5cfda703571e/environment_variables"
+        },
+        "features": {
+          "href": "http://localhost:8080/v3/apps/c016fab7-e7a1-4877-aebe-5cfda703571e/features"
+        },
+        "packages": {
+          "href": "http://localhost:8080/v3/apps/c016fab7-e7a1-4877-aebe-5cfda703571e/packages"
+        },
+        "processes": {
+          "href": "http://localhost:8080/v3/apps/c016fab7-e7a1-4877-aebe-5cfda703571e/processes"
+        },
+        "revisions": {
+          "href": "http://localhost:8080/v3/apps/c016fab7-e7a1-4877-aebe-5cfda703571e/revisions"
+        },
+        "self": {
+          "href": "http://localhost:8080/v3/apps/c016fab7-e7a1-4877-aebe-5cfda703571e"
+        },
+        "space": {
+          "href": "http://localhost:8080/v3/spaces/b81d1072-4acb-44da-90c0-ef7f409f2add"
+        },
+        "start": {
+          "href": "http://localhost:8080/v3/apps/c016fab7-e7a1-4877-aebe-5cfda703571e/actions/start",
+          "method": "POST"
+        },
+        "stop": {
+          "href": "http://localhost:8080/v3/apps/c016fab7-e7a1-4877-aebe-5cfda703571e/actions/stop",
+          "method": "POST"
+        },
+        "tasks": {
+          "href": "http://localhost:8080/v3/apps/c016fab7-e7a1-4877-aebe-5cfda703571e/tasks"
+        }
+      },
+      "metadata": {
+        "annotations": {},
+        "labels": {}
+      },
+      "name": "frontend-statics",
+      "relationships": {
+        "space": {
+          "data": {
+            "guid": "b81d1072-4acb-44da-90c0-ef7f409f2add"
+          }
+        }
+      },
+      "state": "STARTED",
+      "updated_at": "2023-05-05T12:38:02Z"
+    },
+    {
+      "created_at": "2022-08-02T13:35:14Z",
+      "guid": "8a20f259-3ba3-4844-a172-bee571a133d8",
+      "lifecycle": {
+        "data": {
+          "buildpacks": [
+            "java_buildpack"
+          ],
+          "stack": "cflinuxfs3"
+        },
+        "type": "buildpack"
+      },
+      "links": {
+        "current_droplet": {
+          "href": "http://localhost:8080/v3/apps/8a20f259-3ba3-4844-a172-bee571a133d8/droplets/current"
+        },
+        "deployed_revisions": {
+          "href": "http://localhost:8080/v3/apps/8a20f259-3ba3-4844-a172-bee571a133d8/revisions/deployed"
+        },
+        "droplets": {
+          "href": "http://localhost:8080/v3/apps/8a20f259-3ba3-4844-a172-bee571a133d8/droplets"
+        },
+        "environment_variables": {
+          "href": "http://localhost:8080/v3/apps/8a20f259-3ba3-4844-a172-bee571a133d8/environment_variables"
+        },
+        "features": {
+          "href": "http://localhost:8080/v3/apps/8a20f259-3ba3-4844-a172-bee571a133d8/features"
+        },
+        "packages": {
+          "href": "http://localhost:8080/v3/apps/8a20f259-3ba3-4844-a172-bee571a133d8/packages"
+        },
+        "processes": {
+          "href": "http://localhost:8080/v3/apps/8a20f259-3ba3-4844-a172-bee571a133d8/processes"
+        },
+        "revisions": {
+          "href": "http://localhost:8080/v3/apps/8a20f259-3ba3-4844-a172-bee571a133d8/revisions"
+        },
+        "self": {
+          "href": "http://localhost:8080/v3/apps/8a20f259-3ba3-4844-a172-bee571a133d8"
+        },
+        "space": {
+          "href": "http://localhost:8080/v3/spaces/b81d1072-4acb-44da-90c0-ef7f409f2add"
+        },
+        "start": {
+          "href": "http://localhost:8080/v3/apps/8a20f259-3ba3-4844-a172-bee571a133d8/actions/start",
+          "method": "POST"
+        },
+        "stop": {
+          "href": "http://localhost:8080/v3/apps/8a20f259-3ba3-4844-a172-bee571a133d8/actions/stop",
+          "method": "POST"
+        },
+        "tasks": {
+          "href": "http://localhost:8080/v3/apps/8a20f259-3ba3-4844-a172-bee571a133d8/tasks"
+        }
+      },
+      "metadata": {
+        "annotations": {},
+        "labels": {}
+      },
+      "name": "java-service",
+      "relationships": {
+        "space": {
+          "data": {
+            "guid": "b81d1072-4acb-44da-90c0-ef7f409f2add"
+          }
+        }
+      },
+      "state": "STARTED",
+      "updated_at": "2023-05-11T12:45:18Z"
+    }
+  ]
+}

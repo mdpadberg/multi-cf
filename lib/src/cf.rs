@@ -29,6 +29,9 @@ pub async fn login(
     options: &Options,
     name: &String,
     mcf_home: &PathBuf,
+    sso_passcode: &Option<String>,
+    org: &Option<String>,
+    space: &Option<String>
 ) -> Result<()> {
     if let Some(some) = settings.environments.iter().find(|env| &env.name == name) {
         let cf_binary_name = &options.cf_binary_name;
@@ -37,8 +40,16 @@ pub async fn login(
         if some.skip_ssl_validation {
             cf.arg("--skip-ssl-validation");
         }
-        if some.sso {
+        if let Some(some) = sso_passcode {
+            cf.args(&["--sso-passcode", some]);
+        } else if some.sso {
             cf.arg("--sso");
+        }
+        if let Some(some) = org {
+            cf.args(&["-o", some]);
+        }
+        if let Some(some) = space {
+            cf.args(&["-s", some]);
         }
         let child = cf.spawn().expect("Failure in creating child process");
         child.wait_with_output().await?;
@@ -313,6 +324,9 @@ mod tests {
             },
             &String::from("p02"),
             &PathBuf::from(""),
+            &None,
+            &None,
+            &None
         ).await;
         assert!(result.is_err());
         assert_eq!(result.unwrap_err().to_string(), "could not find \"p02\" in environment list [\n    Environment {\n        name: \"p01\",\n        url: \"url\",\n        sso: false,\n        skip_ssl_validation: false,\n    },\n]");
@@ -336,6 +350,9 @@ mod tests {
             },
             &String::from("p01"),
             &PathBuf::from(""),
+            &None,
+            &None,
+            &None
         ).await;
         assert!(result.is_ok());
     }

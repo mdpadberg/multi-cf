@@ -1,0 +1,31 @@
+{
+  "app": {
+    "version": "76.10.0"
+  },
+  "showLoginLinks": true,
+  "links": {
+    "uaa": "https://uaa.localhost:8080",
+    "login": "https://login.localhost:8080"
+  },
+  "zone_name": "uaa",
+  "entityID": "http://login.localhost:8080",
+  "commit_id": "ad7df66",
+  "idpDefinitions": {
+    "CompanySSO": "https://login.localhost:8080/saml/discovery?returnIDParam=idp&entityID=http://login.localhost:8080&idp=CompanySSO&isPassive=true"
+  },
+  "prompts": {
+    "username": [
+      "text",
+      "Email"
+    ],
+    "password": [
+      "password",
+      "Password"
+    ],
+    "passcode": [
+      "password",
+      "Temporary Authentication Code ( Get one at https://login.localhost:8080/passcode )"
+    ]
+  },
+  "timestamp": "2023-04-20T12:35:45+0000"
+}

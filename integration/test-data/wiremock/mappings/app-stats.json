@@ -1,0 +1,43 @@
+{
+  "mappings": [
+    {
+      "name": "processes-both",
+      "request": {
+        "urlPathPattern": "/v3/processes",
+        "queryParameters": {
+          "app_guids": {
+            "equalTo": "c016fab7-e7a1-4877-aebe-5cfda703571e,8a20f259-3ba3-4844-a172-bee571a133d8"
+          }
+        },
+        "method": "GET"
+      },
+      "response": {
+        "status": 200,
+        "bodyFileName": "v3-processes.json"
+      }
+    },
+    {
+      "name": "app-stats-frontend-statics",
+      "request": {
+        "urlPathPattern": "/v3/processes/c016fab7-e7a1-4877-aebe-5cfda703571e/stats",
+        "method": "GET"
+      },
+      "response": {
+        "status": 200,
+        "bodyFileName": "app-stats-frontend-statics.json"
+      }
+    },
+    {
+      "name": "app-stats-java-service",
+      "request": {
+        "urlPathPattern": "/v3/processes/8a20f259-3ba3-4844-a172-bee571a133d8/stats",
+        "method": "GET"
+      },
+      "response": {
+        "status": 200,
+        "bodyFileName": "app-stats-java-service.json"
+      }
+    }
+  ]
+}
+

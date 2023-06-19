@@ -1,6 +1,6 @@
 [package]
 name = "mcf"
-version = "0.14.1"
+version = "0.17.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -11,9 +11,6 @@ lto = true
 
 [profile.dev]
 opt-level = 0
-
-# [features]
-# integration_tests = []
 
 [dependencies]
 clap = { version = "3.2.17", features = ["derive"] }

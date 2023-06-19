@@ -1,0 +1,16 @@
+{
+  "name": "routes",
+  "request": {
+    "urlPathPattern": "/v3/routes",
+    "queryParameters": {
+      "app_guids": {
+        "equalTo": "c016fab7-e7a1-4877-aebe-5cfda703571e,8a20f259-3ba3-4844-a172-bee571a133d8"
+      }
+    },
+    "method": "GET"
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "v3-spaces.json"
+  }
+}

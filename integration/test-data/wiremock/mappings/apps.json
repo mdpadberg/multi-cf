@@ -1,0 +1,19 @@
+{
+  "name": "apps",
+  "request": {
+    "urlPathPattern": "/v3/apps",
+    "queryParameters": {
+      "order_by": {
+        "equalTo": "name"
+      },
+      "space_guids": {
+        "matches" : "(.*)"
+      }
+    },
+    "method": "GET"
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "v3-apps.json"
+  }
+}
