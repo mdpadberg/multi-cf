@@ -30,7 +30,8 @@ COPY ./integration /app/integration
 # * We're mounting that cache again to use during the build, otherwise it's not present and we'll have to download those again - bad!
 # * EOF syntax is neat but not without its drawbacks. We need to `set -e`, otherwise a failing command is going to continue on
 # * Rust here is a bit fiddly, so we'll touch the files (even though we copied over them) to force a new build
-RUN --mount=type=cache,target=/usr/local/cargo/registry <<EOF
+RUN <<EOF
+  --mount=type=cache,target=/usr/local/cargo/registry
   set -e
   # update timestamps to force a new build
   touch /app/lib/src/lib.rs /app/cli/src/main.rs
@@ -40,9 +41,11 @@ EOF
 FROM rust:latest AS runner
 
 # Download cf cli
-RUN curl -L "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=v8&source=github" | tar -zx && \
-    mv cf8 /usr/bin && \
-    mv cf /usr/bin
+RUN <<EOF
+  curl -L "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=v8&source=github" | tar -zx
+  mv cf8 /usr/bin
+  mv cf /usr/bin
+EOF
 
 # Copy and build integration  
 COPY --from=build /app/integration /integration
