@@ -31,7 +31,7 @@ pub async fn login(
     mcf_home: &PathBuf,
     sso_passcode: &Option<String>,
     org: &Option<String>,
-    space: &Option<String>
+    space: &Option<String>,
 ) -> Result<()> {
     if let Some(some) = settings.environments.iter().find(|env| &env.name == name) {
         let cf_binary_name = &options.cf_binary_name;
@@ -85,6 +85,40 @@ pub fn cf_command_tokio(cf_binary_name: &String, name: &String, mcf_folder: &Pat
     let cf_home: PathBuf = get_cf_home_from_mcf_environment(name, mcf_folder);
     cf.env("CF_HOME", cf_home);
     cf
+}
+
+pub fn check_if_cf_is_installed(cf_binary_name: &String) -> Result<bool> {
+    check_if_installed(
+        cf_binary_name,
+        None,
+        vec![
+            String::from("cf version"),
+            String::from("Cloud Foundry command line tool"),
+        ],
+    )
+}
+
+fn check_if_installed(
+    cf_binary_name: &String,
+    args: Option<Vec<String>>,
+    output_should_contain: Vec<String>,
+) -> Result<bool> {
+    let mut command = std::process::Command::new(cf_binary_name);
+    if args.is_some() {
+        command.args(args.unwrap());
+    }
+    let output = String::from_utf8(
+        command
+            .stdout(Stdio::piped())
+            .spawn()
+            .context("mcf: could not spawn to check if cf is installed")?
+            .wait_with_output()
+            .context("mcf: problem is getting the output to check if cf is installed")?
+            .stdout,
+    )?;
+    Ok(output_should_contain
+        .iter()
+        .all(|text| output.contains(text)))
 }
 
 fn get_cf_home_from_mcf_environment(env_name: &String, mcf_folder: &PathBuf) -> PathBuf {
@@ -326,8 +360,9 @@ mod tests {
             &PathBuf::from(""),
             &None,
             &None,
-            &None
-        ).await;
+            &None,
+        )
+        .await;
         assert!(result.is_err());
         assert_eq!(result.unwrap_err().to_string(), "could not find \"p02\" in environment list [\n    Environment {\n        name: \"p01\",\n        url: \"url\",\n        sso: false,\n        skip_ssl_validation: false,\n    },\n]");
     }
@@ -352,8 +387,42 @@ mod tests {
             &PathBuf::from(""),
             &None,
             &None,
-            &None
-        ).await;
+            &None,
+        )
+        .await;
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_check_if_installed() {
+        let output_one = check_if_installed(
+            &String::from("echo"),
+            Some(vec![String::from("hello")]),
+            vec![
+                String::from("cf version"),
+                String::from("Cloud Foundry command line tool"),
+            ],
+        );
+        let output_two = check_if_installed(
+            &String::from("echo"),
+            Some(vec![
+                String::from("cf"),
+                String::from("version"),
+                String::from("8.6.1+b5a352a.2023-02-27,"),
+                String::from("Cloud"),
+                String::from("Foundry"),
+                String::from("command"),
+                String::from("line"),
+                String::from("tool"),
+            ]),
+            vec![
+                String::from("cf version"),
+                String::from("Cloud Foundry command line tool"),
+            ],
+        );
+        assert!(output_one.is_ok());
+        assert_eq!(output_one.unwrap(), false);
+        assert!(output_two.is_ok());
+        assert_eq!(output_two.unwrap(), true);
     }
 }
