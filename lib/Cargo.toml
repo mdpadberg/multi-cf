@@ -14,7 +14,7 @@ lto = true
 opt-level = 0
 
 [dependencies]
-anyhow = "1.0.62"
+anyhow = "1.0.75"
 dirs = "4.0.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = "0.9.9"
