@@ -26,7 +26,7 @@ jobs:
           git config --global core.autocrlf false
         fi
     - name: Checkout project
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Install Rust with cargo
       uses: actions-rs/toolchain@v1
       with:
@@ -40,7 +40,7 @@ jobs:
     env:
       DOCKER_BUILDKIT: 1
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: check out the source code
         run: docker-compose up --exit-code-from mcf --build
   create_release:
@@ -85,7 +85,7 @@ jobs:
           git config --global core.autocrlf false
         fi
     - name: Checkout project
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Install Rust with cargo
       uses: actions-rs/toolchain@v1
       with:
