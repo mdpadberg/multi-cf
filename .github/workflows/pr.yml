@@ -2,7 +2,7 @@ name: pr
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, closed]
+    types: [opened, synchronize, reopened]
 
 jobs:
   unit-tests:
