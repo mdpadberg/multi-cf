@@ -8,19 +8,19 @@ use lib::{
 use std::{io, path::PathBuf, sync::Arc};
 
 #[derive(Parser, Debug)]
-#[clap(author, version, about, long_about = None)]
-#[clap(name = "mcf")]
-#[clap(bin_name = "mcf")]
+#[command(author, version, about, long_about = None)]
+#[command(name = "mcf")]
+#[command(bin_name = "mcf")]
 struct Mcf {
-    #[clap(subcommand)]
+    #[command(subcommand)]
     command: Subcommands,
 
     /// Overwrite mcf config path
-    #[clap(long, global = true)]
+    #[arg(long, global = true)]
     override_path: Option<String>,
 
     /// Overwrite binary name for cloudfoundry cli (for example: "cf8")
-    #[clap(long, global = true)]
+    #[arg(long, global = true)]
     cf_binary_name: Option<String>,
 }
 
