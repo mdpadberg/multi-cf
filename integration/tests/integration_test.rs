@@ -7,29 +7,24 @@ fn can_run_mcf() {
     cmd.arg("-h");
     cmd.assert().success();
     let expected_output = format!(
-        r###"
-USAGE:
-    mcf [OPTIONS] <SUBCOMMAND>
+        r###"Usage: mcf [OPTIONS] <COMMAND>
 
-OPTIONS:
-        --cf-binary-name <CF_BINARY_NAME>
-            Overwrite binary name for cloudfoundry cli (for example: "cf8")
+Commands:
+  environment  Add, Remove, List environment (example cf-dev) [aliases: env]
+  login        Login to one of the Cloud Foundry environments [aliases: l]
+  exec         Execute command on Cloud Foundry environment [aliases: e]
+  completion   Generate shell autocompletion files
+  help         Print this message or the help of the given subcommand(s)
 
-    -h, --help
-            Print help information
-
-        --override-path <OVERRIDE_PATH>
-            Overwrite mcf config path
-
-    -V, --version
-            Print version information
-
-SUBCOMMANDS:
-    completion     Generate shell autocompletion files
-    environment    Add, Remove, List environment (example cf-dev) [aliases: env]
-    exec           Execute command on Cloud Foundry environment [aliases: e]
-    help           Print this message or the help of the given subcommand(s)
-    login          Login to one of the Cloud Foundry environments [aliases: l]
+Options:
+      --override-path <OVERRIDE_PATH>
+          Overwrite mcf config path
+      --cf-binary-name <CF_BINARY_NAME>
+          Overwrite binary name for cloudfoundry cli (for example: "cf8")
+  -h, --help
+          Print help
+  -V, --version
+          Print version
 "###
     );
     let actual_output = String::from_utf8(cmd.assert().get_output().to_owned().stdout).unwrap();

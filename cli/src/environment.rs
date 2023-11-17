@@ -12,15 +12,16 @@ pub enum EnvironmentCommands {
     Add {
         name: String,
         url: String,
-        #[clap(long)]
+        #[arg(long)]
         sso: bool,
-        #[clap(long)]
+        #[arg(long)]
         skip_ssl_validation: bool,
     },
-    #[clap(visible_alias = "rm")]
     /// Remove an environment to the environment list
+    #[command(visible_alias = "rm")]
     Remove { name: String },
     /// List all the environment you stored
+    #[command(visible_alias = "ls")]
     List,
 }
 
