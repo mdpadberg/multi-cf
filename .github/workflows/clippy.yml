@@ -3,7 +3,7 @@ name: run clippy github action
 on:
   workflow_call:
     secrets:
-      token:
+      GITHUB_TOKEN:
         required: true
   
 jobs:
