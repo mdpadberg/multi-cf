@@ -20,4 +20,4 @@ jobs:
   call-workflow-integration-tests:
     name: run integration tests
     needs: [call-workflow-rust-cache]
-    uses: mdpadberg/multi-cf/.github/workflows/integration-tests.yml@main 
+    uses: mdpadberg/multi-cf/.github/workflows/integration-tests.yml@main
