@@ -1,4 +1,4 @@
-name: tags
+name: ci-tags
 
 on:
   push:
@@ -6,53 +6,22 @@ on:
       - "[0-9]+.[0-9]+.[0-9]+"
 
 jobs:
-  unit-tests:
+  call-workflow-rust-cache:
+    name: run rust-cache action
+    uses: mdpadberg/multi-cf/.github/workflows/rust-cache.yml@main
+  call-workflow-clippy:
+    name: run clippy github action
+    needs: [call-workflow-rust-cache]
+    uses: mdpadberg/multi-cf/.github/workflows/clippy.yml@main
+    secrets: inherit
+  call-workflow-unit-tests:
     name: run unit tests
-    strategy:
-      matrix:
-        include:
-        - os: macos-latest
-          rust-target: x86_64-apple-darwin
-        - os: ubuntu-latest
-          rust-target: x86_64-unknown-linux-gnu
-        - os: windows-latest
-          rust-target: x86_64-pc-windows-gnu
-    runs-on: ${{ matrix.os }}
-    steps:
-    - name: Set autocrlf
-      shell: bash
-      run: |
-        if [ "${{ matrix.os }}" = "windows-latest" ]; then
-          git config --global core.autocrlf false
-        fi
-    - name: Checkout project
-      uses: actions/checkout@v4
-    - name: Install Rust with cargo
-      uses: dtolnay/rust-toolchain@stable
-      with:
-        toolchain: stable
-        target: ${{ matrix.rust-target }}
-    - name: Restore cargo cache
-      uses: Swatinem/rust-cache@v2
-    - name: Run unit tests
-      run: cargo test --verbose
-  integration-tests:
+    needs: [call-workflow-rust-cache]
+    uses: mdpadberg/multi-cf/.github/workflows/unit-tests.yml@main
+  call-workflow-integration-tests:
     name: run integration tests
-    runs-on: ubuntu-latest
-    env:
-      DOCKER_BUILDKIT: 1
-    steps:
-      - name: Checkout project
-        uses: actions/checkout@v4
-      - name: Install Rust with cargo
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: stable
-          target: x86_64-unknown-linux-gnu
-      - name: Restore cargo cache
-        uses: Swatinem/rust-cache@v2
-      - name: check out the source code
-        run: docker-compose up --exit-code-from mcf --build
+    needs: [call-workflow-rust-cache]
+    uses: mdpadberg/multi-cf/.github/workflows/integration-tests.yml@main 
   create_release:
     name: Create release
     runs-on: ubuntu-latest
@@ -71,7 +40,7 @@ jobs:
         prerelease: false
   build_release:
     name: Build release
-    needs: [create_release]
+    needs: [call-workflow-rust-cache, create_release]
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -103,6 +72,8 @@ jobs:
         target: ${{ matrix.rust-target }}
     - name: Restore cargo cache
       uses: Swatinem/rust-cache@v2
+      with:
+        shared-key: ${{ matrix.os }}-${{ matrix.rust-target }}
     - name: Version bump
       shell: bash
       run: |
