@@ -5,7 +5,7 @@ Multi cf is a cli tool that can be used to execute commands on multiple cloud fo
 Please check the [maintainers.md](./MAINTAINERS.md) to get in touch with us.
 
 ## Tech
-Please check the [tech.md](./TECH.md) for all technical details on how to build, run, and run the tests of this project.
+Please check the [tech.md](./TECH.md) for all technical details on how to build the cli, run the cli, and run the tests of this project.
 
 ## Installation
 
