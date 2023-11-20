@@ -8,20 +8,20 @@ on:
 jobs:
   call-workflow-rust-cache:
     name: run rust-cache action
-    uses: mdpadberg/multi-cf/.github/workflows/rust-cache.yml@main
+    uses: mdpadberg/multi-cf/.github/workflows/rust-cache.yml
   call-workflow-clippy:
     name: run clippy github action
     needs: [call-workflow-rust-cache]
-    uses: mdpadberg/multi-cf/.github/workflows/clippy.yml@main
+    uses: mdpadberg/multi-cf/.github/workflows/clippy.yml
     secrets: inherit
   call-workflow-unit-tests:
     name: run unit tests
     needs: [call-workflow-rust-cache]
-    uses: mdpadberg/multi-cf/.github/workflows/unit-tests.yml@main
+    uses: mdpadberg/multi-cf/.github/workflows/unit-tests.yml
   call-workflow-integration-tests:
     name: run integration tests
     needs: [call-workflow-rust-cache]
-    uses: mdpadberg/multi-cf/.github/workflows/integration-tests.yml@main 
+    uses: mdpadberg/multi-cf/.github/workflows/integration-tests.yml
   create_release:
     name: Create release
     runs-on: ubuntu-latest
