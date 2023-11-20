@@ -54,7 +54,7 @@ pub fn add(
         skip_ssl_validation: *skip_ssl_validation,
     });
     let new_settings = Settings {
-        environments: environments,
+        environments,
     };
     new_settings.save(options)
 }
