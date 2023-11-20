@@ -14,7 +14,7 @@ jobs:
     needs: [call-workflow-rust-cache]
     uses: mdpadberg/multi-cf/.github/workflows/clippy.yml@main
     secrets: 
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      token: ${{ secrets.GITHUB_TOKEN }}
   call-workflow-unit-tests:
     name: run unit tests
     needs: [call-workflow-rust-cache]
