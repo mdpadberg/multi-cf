@@ -13,7 +13,7 @@ use crate::settings::Settings;
 pub async fn exec(
     settings: &Settings,
     options: Arc<Options>,
-    names: &String,
+    names: &str,
     command: Arc<Vec<String>>,
     original_cf_home: Arc<PathBuf>,
     mcf_folder: Arc<PathBuf>,
@@ -47,7 +47,7 @@ pub async fn exec(
 async fn exec_sequential(
     settings: &Settings,
     options: Arc<Options>,
-    names: &String,
+    names: &str,
     command: Arc<Vec<String>>,
     original_cf_home: Arc<PathBuf>,
     mcf_folder: Arc<PathBuf>,
@@ -63,8 +63,14 @@ async fn exec_sequential(
         let command = command.clone();
         let original_cf_home = original_cf_home.clone();
         let mcf_folder = mcf_folder.clone();
-        let child: tokio::process::Child =
-            child_tokio(options, command, &env_name, original_cf_home, mcf_folder, &true)?;
+        let child: tokio::process::Child = child_tokio(
+            options,
+            command,
+            &env_name,
+            original_cf_home,
+            mcf_folder,
+            &true,
+        )?;
         child.wait_with_output().await?;
     }
     Ok(())
@@ -73,7 +79,7 @@ async fn exec_sequential(
 async fn exec_parallel(
     settings: &Settings,
     options: Arc<Options>,
-    names: &String,
+    names: &str,
     command: Arc<Vec<String>>,
     original_cf_home: Arc<PathBuf>,
     mcf_folder: Arc<PathBuf>,
@@ -90,8 +96,14 @@ async fn exec_parallel(
         tasks.spawn(async move {
             let whitespace_length = max_chars - env_name.len();
             let whitespace = (0..=whitespace_length).map(|_| " ").collect::<String>();
-            let child: tokio::process::Child =
-                child_tokio(options, command, &env_name, original_cf_home, mcf_folder, &false)?;
+            let child: tokio::process::Child = child_tokio(
+                options,
+                command,
+                &env_name,
+                original_cf_home,
+                mcf_folder,
+                &false,
+            )?;
             let stdout = child.stdout.context("exec: no stdout")?;
             let mut lines = BufReader::new(stdout).lines();
             while let Some(line) = lines.next_line().await? {
@@ -107,17 +119,18 @@ async fn exec_parallel(
 }
 
 fn max_environment_name_length(
-    input_environments: &Vec<(Option<Environment>, String)>,
+    input_environments: &[(Option<Environment>, String)],
 ) -> Result<usize, anyhow::Error> {
-    Ok(input_environments
+    let result = input_environments
         .iter()
         .map(|(_env, env_name)| env_name.len())
         .max()
-        .context("environment name should have length")?)
+        .context("environment name should have length")?;
+    Ok(result)
 }
 
 fn check_if_all_environments_are_known(
-    input_environments: &Vec<(Option<Environment>, String)>,
+    input_environments: &[(Option<Environment>, String)],
     settings: &Settings,
 ) -> Result<()> {
     for env in input_environments.iter() {
@@ -132,7 +145,7 @@ fn check_if_all_environments_are_known(
     Ok(())
 }
 
-fn input_environments(names: &String, settings: &Settings) -> Vec<(Option<Environment>, String)> {
+fn input_environments(names: &str, settings: &Settings) -> Vec<(Option<Environment>, String)> {
     names
         .split(',')
         .map(|s| s.to_string())

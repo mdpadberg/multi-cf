@@ -36,10 +36,10 @@ pub fn match_environment(
             url,
             sso,
             skip_ssl_validation,
-        } => add(&settings, options, name, url, sso, skip_ssl_validation),
-        EnvironmentCommands::Remove { name } => remove(&settings, options, name),
+        } => add(settings, options, name, url, sso, skip_ssl_validation),
+        EnvironmentCommands::Remove { name } => remove(settings, options, name),
         EnvironmentCommands::List => {
-            let all_envs = list(&settings);
+            let all_envs = list(settings);
             let mut table = Table::new();
             //HEADER
             table.add_row(Row::new(
