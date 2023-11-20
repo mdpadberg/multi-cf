@@ -5,6 +5,16 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
+  run-clippy:
+    name: run clippy
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout project
+      uses: actions/checkout@v4
+    - name: Install Rust with cargo
+      uses: dtolnay/rust-toolchain@stable
+    - name: Run clippy and break build if there are warnings
+      run: cargo clippy -- -D warnings
   unit-tests:
     name: run unit tests
     strategy:
@@ -27,7 +37,7 @@ jobs:
     - name: Checkout project
       uses: actions/checkout@v4
     - name: Install Rust with cargo
-      uses: actions-rs/toolchain@v1
+      uses: dtolnay/rust-toolchain@stable
       with:
         toolchain: stable
         target: ${{ matrix.rust-target }}
