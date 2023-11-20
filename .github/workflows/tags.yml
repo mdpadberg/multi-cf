@@ -28,7 +28,7 @@ jobs:
     - name: Checkout project
       uses: actions/checkout@v4
     - name: Install Rust with cargo
-      uses: actions-rs/toolchain@v1
+      uses: dtolnay/rust-toolchain@stable
       with:
         toolchain: stable
         target: ${{ matrix.rust-target }}
@@ -87,7 +87,7 @@ jobs:
     - name: Checkout project
       uses: actions/checkout@v4
     - name: Install Rust with cargo
-      uses: actions-rs/toolchain@v1
+      uses: dtolnay/rust-toolchain@stable
       with:
         toolchain: stable
         target: ${{ matrix.rust-target }}
