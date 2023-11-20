@@ -53,6 +53,7 @@ pub fn add(
         sso: *sso,
         skip_ssl_validation: *skip_ssl_validation,
     });
+    let a = format!("Usage: mcf [OPTIONS] <COMMAND>");
     let new_settings = Settings {
         environments,
     };
