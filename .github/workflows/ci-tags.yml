@@ -21,7 +21,7 @@ jobs:
   call-workflow-integration-tests:
     name: run integration tests
     needs: [call-workflow-rust-cache]
-    uses: mdpadberg/multi-cf/.github/workflows/integration-tests@main 
+    uses: mdpadberg/multi-cf/.github/workflows/integration-tests.yml@main 
   create_release:
     name: Create release
     runs-on: ubuntu-latest
