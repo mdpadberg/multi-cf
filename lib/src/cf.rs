@@ -28,7 +28,7 @@ pub async fn login(
     settings: &Settings,
     options: &Options,
     name: &String,
-    mcf_home: &PathBuf,
+    mcf_home: &Path,
     sso_passcode: &Option<String>,
     org: &Option<String>,
     space: &Option<String>,
@@ -41,15 +41,15 @@ pub async fn login(
             cf.arg("--skip-ssl-validation");
         }
         if let Some(some) = sso_passcode {
-            cf.args(&["--sso-passcode", some]);
+            cf.args(["--sso-passcode", some]);
         } else if some.sso {
             cf.arg("--sso");
         }
         if let Some(some) = org {
-            cf.args(&["-o", some]);
+            cf.args(["-o", some]);
         }
         if let Some(some) = space {
-            cf.args(&["-s", some]);
+            cf.args(["-s", some]);
         }
         let child = cf.spawn().expect("Failure in creating child process");
         child.wait_with_output().await?;
@@ -77,10 +77,11 @@ pub fn child_tokio(
     if !sequential_mode {
         tokio_command.stdout(Stdio::piped());
     }
-    Ok(tokio_command.spawn().context("Could not spawn")?)
+    let result = tokio_command.spawn().context("Could not spawn")?;
+    Ok(result)
 }
 
-pub fn cf_command_tokio(cf_binary_name: &String, name: &String, mcf_folder: &PathBuf) -> Command {
+pub fn cf_command_tokio(cf_binary_name: &String, name: &String, mcf_folder: &Path) -> Command {
     let mut cf: Command = Command::new(cf_binary_name);
     let cf_home: PathBuf = get_cf_home_from_mcf_environment(name, mcf_folder);
     cf.env("CF_HOME", cf_home);
@@ -104,8 +105,8 @@ fn check_if_installed(
     output_should_contain: Vec<String>,
 ) -> Result<bool> {
     let mut command = std::process::Command::new(cf_binary_name);
-    if args.is_some() {
-        command.args(args.unwrap());
+    if let Some(args) = args {
+        command.args(args);
     }
     let output = String::from_utf8(
         command
@@ -121,14 +122,14 @@ fn check_if_installed(
         .all(|text| output.contains(text)))
 }
 
-fn get_cf_home_from_mcf_environment(env_name: &String, mcf_folder: &PathBuf) -> PathBuf {
-    let mut cf_home = mcf_folder.clone();
+fn get_cf_home_from_mcf_environment(env_name: &String, mcf_folder: &Path) -> PathBuf {
+    let mut cf_home = mcf_folder.to_path_buf();
     cf_home.push("homes");
     cf_home.push(env_name);
-    return cf_home;
+    cf_home
 }
 
-fn prepare_plugins(name: &String, original_cf_home: &PathBuf, mcf_folder: &PathBuf) -> Result<()> {
+fn prepare_plugins(name: &String, original_cf_home: &Path, mcf_folder: &Path) -> Result<()> {
     let source = original_cf_home.join("plugins");
     if !source.exists() {
         bail!("source does not exist, source={:#?}", source);

@@ -8,17 +8,9 @@ use std::{
     path::PathBuf,
 };
 
-#[derive(Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Deserialize, Serialize, PartialEq, Eq, Default)]
 pub struct Settings {
     pub environments: Vec<Environment>,
-}
-
-impl Default for Settings {
-    fn default() -> Self {
-        Self {
-            environments: vec![],
-        }
-    }
 }
 
 impl Settings {
@@ -50,11 +42,11 @@ fn path_to_settings_file(override_path: PathBuf) -> PathBuf {
 
 fn write_settings_file_to_disk(path: &PathBuf, settings: &Settings) -> Result<()> {
     fs::create_dir_all(
-        &path
+        path
             .parent()
             .ok_or(anyhow!("Dirs crate didn't provide an parent folder"))?,
     )?;
-    File::create(&path)?.write_all(serde_yaml::to_string(settings)?.as_bytes())?;
+    File::create(path)?.write_all(serde_yaml::to_string(settings)?.as_bytes())?;
     Ok(())
 }
 

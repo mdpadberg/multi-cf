@@ -13,11 +13,10 @@ pub struct Environment {
 
 impl Environment {
     pub fn get_fields() -> Result<Vec<String>> {
-        Ok(serde_yaml::to_value(&Environment::default())?
+        Ok(serde_yaml::to_value(Environment::default())?
             .as_mapping()
             .context("could not deserialize environment")?
             .keys()
-            .into_iter()
             .map(|key| key.as_str())
             .filter(|key| key.is_some())
             .map(|key| key.unwrap().to_string())
@@ -29,10 +28,9 @@ impl Environment {
             .as_mapping()
             .context("could not deserialize environment")?
             .values()
-            .into_iter()
-            .map(|value| serde_yaml::to_string(value))
+            .map(serde_yaml::to_string)
             .filter(|value| value.is_ok())
-            .map(|values| values.unwrap().to_string().replace("\n", ""))
+            .map(|values| values.unwrap().to_string().replace('\n', ""))
             .collect::<Vec<String>>())
     }
 }
@@ -41,7 +39,7 @@ pub fn add(
     settings: &Settings,
     options: &Options,
     name: &String,
-    url: &String,
+    url: &str,
     sso: &bool,
     skip_ssl_validation: &bool,
 ) -> Result<()> {
@@ -49,12 +47,12 @@ pub fn add(
     environments.retain(|env| &env.name != name);
     environments.push(Environment {
         name: name.clone(),
-        url: url.clone(),
+        url: url.to_owned(),
         sso: *sso,
         skip_ssl_validation: *skip_ssl_validation,
     });
     let new_settings = Settings {
-        environments: environments,
+        environments,
     };
     new_settings.save(options)
 }
@@ -63,7 +61,7 @@ pub fn remove(settings: &Settings, options: &Options, name: &String) -> Result<(
     let mut environments = settings.environments.clone();
     environments.retain(|env| &env.name != name);
     let new_settings = Settings {
-        environments: environments,
+        environments,
     };
     new_settings.save(options)
 }
