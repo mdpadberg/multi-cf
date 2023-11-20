@@ -1,0 +1,38 @@
+name: run unit tests
+
+on:
+  workflow_call:
+
+jobs:
+  unit-tests:
+    name: run unit tests
+    strategy:
+      matrix:
+        include:
+        - os: macos-latest
+          rust-target: x86_64-apple-darwin
+        - os: ubuntu-latest
+          rust-target: x86_64-unknown-linux-gnu
+        - os: windows-latest
+          rust-target: x86_64-pc-windows-gnu
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Set autocrlf
+      shell: bash
+      run: |
+        if [ "${{ matrix.os }}" = "windows-latest" ]; then
+          git config --global core.autocrlf false
+        fi
+    - name: Checkout project
+      uses: actions/checkout@v4
+    - name: Install Rust with cargo
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+        target: ${{ matrix.rust-target }}
+    - name: Restore cargo cache
+      uses: Swatinem/rust-cache@v2
+      with:
+        shared-key: ${{ matrix.os }}-${{ matrix.rust-target }}
+    - name: Run unit tests
+      run: cargo test --verbose

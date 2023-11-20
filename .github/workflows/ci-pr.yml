@@ -1,0 +1,23 @@
+name: ci-pr
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  call-workflow-rust-cache:
+    name: run rust-cache action
+    uses: mdpadberg/multi-cf/.github/workflows/rust-cache.yml@main
+  call-workflow-clippy:
+    name: run clippy github action
+    needs: [call-workflow-rust-cache]
+    uses: mdpadberg/multi-cf/.github/workflows/clippy.yml@main
+    secrets: inherit
+  call-workflow-unit-tests:
+    name: run unit tests
+    needs: [call-workflow-rust-cache]
+    uses: mdpadberg/multi-cf/.github/workflows/unit-tests.yml@main
+  call-workflow-integration-tests:
+    name: run integration tests
+    needs: [call-workflow-rust-cache]
+    uses: mdpadberg/multi-cf/.github/workflows/integration-tests@main 
