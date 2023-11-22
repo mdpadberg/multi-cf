@@ -1,0 +1,36 @@
+name: run trigger workflow in other repo action
+
+on:
+  workflow_call:
+    inputs:
+      owner:
+        required: true
+        type: string
+      repo:
+        required: true
+        type: string
+      workflow_id:
+        required: true
+        type: string
+      ref:
+        required: true
+        type: string
+    secrets:
+      pat-token:
+        required: true
+  
+jobs:
+  trigger-workflow-in-other-repo:
+    name: run trigger workflow in other repo
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.pat-token }}
+        script: |
+          await github.rest.actions.createWorkflowDispatch({
+            owner: '${{ inputs.owner }}',
+            repo: '${{ inputs.repo }}',
+            workflow_id: '${{ inputs.workflow_id }}',
+            ref: '${{ inputs.ref }}'
+          })    

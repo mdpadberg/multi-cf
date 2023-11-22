@@ -68,6 +68,6 @@ jobs:
     - name: Upload release
       shell: bash
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.token }}
       run: |
         gh release upload ${{ inputs.release-version }} ${{ env.ASSET }}

@@ -1,4 +1,4 @@
-name: run clippy github action
+name: run version bump action
 
 on:
   workflow_call:
@@ -11,8 +11,8 @@ on:
         required: true
   
 jobs:
-  clippy:
-    name: run clippy github action
+  version-bump:
+    name: run version bump
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -36,7 +36,7 @@ jobs:
     - name: Commit & Push changes
       uses: actions-js/push@master
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        github_token: ${{ secrets.token }}
         author_email: 43384430+mdpadberg@users.noreply.github.com
         author_name: mdpadberg
         message: "Push version bump ${{ inputs.release-version }}"
