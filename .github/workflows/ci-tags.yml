@@ -30,7 +30,7 @@ jobs:
     needs: [call-workflow-unit-tests, call-workflow-integration-tests]
     uses: mdpadberg/multi-cf/.github/workflows/create-release.yml@main 
     with:
-      release-version: ${GITHUB_REF#refs/*/}
+      release-version: ${{ github.ref_name }}
     secrets: 
       token: ${{ secrets.GITHUB_TOKEN }}
   call-workflow-build-release:
@@ -40,7 +40,7 @@ jobs:
     needs: [call-workflow-create-release]
     uses: mdpadberg/multi-cf/.github/workflows/build-release.yml@main 
     with:
-      release-version: ${GITHUB_REF#refs/*/}
+      release-version: ${{ github.ref_name }}
       binary-name: multi-cf
     secrets: 
       token: ${{ secrets.GITHUB_TOKEN }}
