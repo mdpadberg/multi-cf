@@ -41,7 +41,7 @@ jobs:
     uses: mdpadberg/multi-cf/.github/workflows/build-release.yml@main 
     with:
       release-version: ${{ github.ref_name }}
-      binary-name: multi-cf
+      binary-name: mcf
     secrets: 
       token: ${{ secrets.GITHUB_TOKEN }}
   call-workflow-trigger-workflow-in-other-repo-homebrew:
