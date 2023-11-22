@@ -17,120 +17,43 @@ jobs:
       token: ${{ secrets.GITHUB_TOKEN }}
   call-workflow-unit-tests:
     name: run unit tests
-    needs: [call-workflow-rust-cache]
+    needs: [call-workflow-clippy]
     uses: mdpadberg/multi-cf/.github/workflows/unit-tests.yml@main
   call-workflow-integration-tests:
     name: run integration tests
-    needs: [call-workflow-rust-cache]
-    uses: mdpadberg/multi-cf/.github/workflows/integration-tests.yml@main 
-  create_release:
-    name: Create release
-    runs-on: ubuntu-latest
-    outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
-    steps:
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        draft: false
-        prerelease: false
-  build_release:
-    name: Build release
-    needs: [call-workflow-rust-cache, create_release]
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-        - os: macos-latest
-          rust-target: x86_64-apple-darwin
-        - os: macos-latest
-          rust-target: aarch64-apple-darwin
-        - os: ubuntu-latest
-          rust-target: x86_64-unknown-linux-gnu
-        - os: windows-latest
-          rust-target: x86_64-pc-windows-gnu
-    steps:
-    - name: Set RELEASE_VERSION
-      shell: bash
-      run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-    - name: Set autocrlf
-      shell: bash
-      run: |
-        if [ "${{ matrix.os }}" = "windows-latest" ]; then
-          git config --global core.autocrlf false
-        fi
-    - name: Checkout project
-      uses: actions/checkout@v4
-    - name: Install Rust with cargo
-      uses: dtolnay/rust-toolchain@stable
-      with:
-        toolchain: stable
-        target: ${{ matrix.rust-target }}
-    - name: Restore cargo cache
-      uses: Swatinem/rust-cache@v2
-      with:
-        shared-key: ${{ matrix.os }}-${{ matrix.rust-target }}
-    - name: Version bump
-      shell: bash
-      run: |
-        cargo install cargo-edit
-        cargo set-version ${{ env.RELEASE_VERSION }}
-    - name: Build
-      shell: bash
-      run: cargo build --release --target ${{ matrix.rust-target }}
-    - name: Build archive
-      shell: bash
-      run: |
-        if [ "${{ matrix.os }}" = "windows-latest" ]; then
-          archive_name="mcf-${{ env.RELEASE_VERSION }}-${{ matrix.rust-target }}.zip"
-          cp target/${{ matrix.rust-target }}/release/mcf.exe .
-          7z a "$archive_name" "mcf.exe"
-          echo "ASSET=$archive_name" >> $GITHUB_ENV
-        else
-          archive_name="mcf-${{ env.RELEASE_VERSION }}-${{ matrix.rust-target }}.tar.gz"
-          cp target/${{ matrix.rust-target }}/release/mcf .
-          tar czf "$archive_name" "mcf"
-          echo "ASSET=$archive_name" >> $GITHUB_ENV
-        fi
-    - name: Upload release archive
-      uses: actions/upload-release-asset@v1.0.2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ needs.create_release.outputs.upload_url }}
-        asset_path: ${{ env.ASSET }}
-        asset_name: ${{ env.ASSET }}
-        asset_content_type: application/octet-stream
-  # Doesnt work see: https://github.com/orgs/community/discussions/13836
-  # push_version_bump:
-  #   name: Push version bump
-  #   needs: [build_release]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - name: Set RELEASE_VERSION
-  #     shell: bash
-  #     run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-  #   - name: Checkout project
-  #     uses: actions/checkout@v3
-  #     with:
-  #       ref: 'main'
-  #   - name: Set version
-  #     shell: bash
-  #     run: |
-  #       cargo install cargo-edit
-  #       cargo set-version ${{ env.RELEASE_VERSION }}
-  #   - name: Push version bump
-  #     run: |
-  #       git config --global user.name 'Github tags action'
-  #       git config --global user.email '43384430+mdpadberg@users.noreply.github.com'
-  #       git add **/Cargo.toml
-  #       git commit -m "version bump to ${{ env.RELEASE_VERSION }}"
-  #       git push 
+    needs: [call-workflow-clippy]
+    uses: mdpadberg/multi-cf/.github/workflows/integration-tests.yml@main   
+  call-workflow-version-bump:
+    name: run version bump
+    permissions:
+      contents: write
+    needs: [call-workflow-unit-tests, call-workflow-integration-tests]
+    uses: mdpadberg/multi-cf/.github/workflows/version-bump.yml@main 
+    with:
+      release-version: ${GITHUB_REF#refs/*/}
+    secrets: 
+      token: ${{ secrets.GITHUB_TOKEN }}  
+  call-workflow-create-release:
+    name: run create release
+    permissions:
+      contents: write
+    needs: [call-workflow-version-bump]
+    uses: mdpadberg/multi-cf/.github/workflows/create-release.yml@main 
+    with:
+      release-version: ${GITHUB_REF#refs/*/}
+    secrets: 
+      token: ${{ secrets.GITHUB_TOKEN }}
+  call-workflow-build-release:
+    name: run build release
+    permissions:
+      contents: write
+    needs: [call-workflow-create-release]
+    uses: mdpadberg/multi-cf/.github/workflows/build-release.yml@main 
+    with:
+      release-version: ${GITHUB_REF#refs/*/}
+      binary-name: multi-cf
+    secrets: 
+      token: ${{ secrets.GITHUB_TOKEN }}
   trigger_homebrew_tap:
     name: Trigger homebrew-tap
     needs: [build_release]
