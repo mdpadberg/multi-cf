@@ -1,0 +1,28 @@
+name: run create release
+
+on:
+  workflow_call:
+    inputs:
+      release-version:
+        required: true
+        type: string
+    secrets:
+      token:
+        required: true
+  
+jobs:
+  create_release:
+    name: Create release
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout project
+      uses: actions/checkout@v4
+    - name: Create a Release
+      id: create_release
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ secrets.token }}
+      run: |
+        gh release create ${{ inputs.release-version }} --title "Release ${{ inputs.release-version }}" --generate-notes

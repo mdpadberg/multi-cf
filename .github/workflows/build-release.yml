@@ -1,0 +1,73 @@
+name: run build release
+
+on:
+  workflow_call:
+    inputs:
+      release-version:
+        required: true
+        type: string
+      binary-name:
+        required: true
+        type: string      
+    secrets:
+      token:
+        required: true
+  
+jobs:
+  build_release:
+    name: Build release
+    permissions:
+      contents: write
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+        - os: macos-latest
+          rust-target: x86_64-apple-darwin
+        - os: macos-latest
+          rust-target: aarch64-apple-darwin
+        - os: ubuntu-latest
+          rust-target: x86_64-unknown-linux-gnu
+        - os: windows-latest
+          rust-target: x86_64-pc-windows-gnu
+    steps:
+    - name: Set autocrlf
+      shell: bash
+      run: |
+        if [ "${{ matrix.os }}" = "windows-latest" ]; then
+          git config --global core.autocrlf false
+        fi
+    - name: Checkout project
+      uses: actions/checkout@v4
+    - name: Install Rust with cargo
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+        target: ${{ matrix.rust-target }}
+    - name: Restore cargo cache
+      uses: Swatinem/rust-cache@v2
+      with:
+        shared-key: ${{ matrix.os }}-${{ matrix.rust-target }}
+    - name: Build
+      shell: bash
+      run: cargo build --release --target ${{ matrix.rust-target }}
+    - name: Build archive
+      shell: bash
+      run: |
+        if [ "${{ matrix.os }}" = "windows-latest" ]; then
+          archive_name="${{ inputs.binary-name }}-${{ inputs.release-version }}-${{ matrix.rust-target }}.zip"
+          cp target/${{ matrix.rust-target }}/release/${{ inputs.binary-name }}.exe .
+          7z a "$archive_name" "${{ inputs.binary-name }}.exe"
+          echo "ASSET=$archive_name" >> $GITHUB_ENV
+        else
+          archive_name="${{ inputs.binary-name }}-${{ inputs.release-version }}-${{ matrix.rust-target }}.tar.gz"
+          cp target/${{ matrix.rust-target }}/release/${{ inputs.binary-name }} .
+          tar czf "$archive_name" "${{ inputs.binary-name }}"
+          echo "ASSET=$archive_name" >> $GITHUB_ENV
+        fi
+    - name: Upload release
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ secrets.token }}
+      run: |
+        gh release upload ${{ inputs.release-version }} ${{ env.ASSET }}

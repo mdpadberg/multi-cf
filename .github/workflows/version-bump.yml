@@ -1,0 +1,42 @@
+name: run version bump action
+
+on:
+  workflow_call:
+    inputs:
+      release-version:
+        required: true
+        type: string
+    secrets:
+      token:
+        required: true
+  
+jobs:
+  version-bump:
+    name: run version bump
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout project
+      uses: actions/checkout@v4
+      with:
+        persist-credentials: false # use GITHUB_TOKEN, instead of personal token
+        fetch-depth: 0 # otherwise, pushing refs to dest repo fails
+    - name: Install Rust with cargo
+      uses: dtolnay/rust-toolchain@stable
+    - name: Restore cargo cache
+      uses: Swatinem/rust-cache@v2
+      with:
+        shared-key: ubuntu-latest-x86_64-unknown-linux-gnu
+    - name: Version bump
+      shell: bash
+      run: |
+        cargo install cargo-edit
+        cargo set-version ${{ inputs.release-version }}
+    - name: Commit & Push changes
+      uses: actions-js/push@master
+      with:
+        github_token: ${{ secrets.token }}
+        author_email: 43384430+mdpadberg@users.noreply.github.com
+        author_name: mdpadberg
+        message: "Push version bump ${{ inputs.release-version }}"
