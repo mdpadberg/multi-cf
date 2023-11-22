@@ -54,7 +54,7 @@ jobs:
       binary-name: multi-cf
     secrets: 
       token: ${{ secrets.GITHUB_TOKEN }}
-  call-workflow-trigger-workflow-in-other-repo:
+  call-workflow-trigger-workflow-in-other-repo-homebrew:
     name: trigger homebrew-tap
     needs: [call-workflow-build-release]
     uses: mdpadberg/multi-cf/.github/workflows/trigger-workflow-in-other-repo.yml@main 
@@ -65,7 +65,7 @@ jobs:
       ref: main
     secrets: 
       pat-token: ${{ secrets.PAT_TOKEN }}
-  call-workflow-trigger-workflow-in-other-repo:
+  call-workflow-trigger-workflow-in-other-repo-scoop:
     name: trigger scoop-bucket
     needs: [call-workflow-build-release]
     uses: mdpadberg/multi-cf/.github/workflows/trigger-workflow-in-other-repo.yml@main 
