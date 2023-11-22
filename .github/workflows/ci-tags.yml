@@ -23,21 +23,11 @@ jobs:
     name: run integration tests
     needs: [call-workflow-clippy]
     uses: mdpadberg/multi-cf/.github/workflows/integration-tests.yml@main   
-  call-workflow-version-bump:
-    name: run version bump
-    permissions:
-      contents: write
-    needs: [call-workflow-unit-tests, call-workflow-integration-tests]
-    uses: mdpadberg/multi-cf/.github/workflows/version-bump.yml@main 
-    with:
-      release-version: ${GITHUB_REF#refs/*/}
-    secrets: 
-      token: ${{ secrets.GITHUB_TOKEN }}  
   call-workflow-create-release:
     name: run create release
     permissions:
       contents: write
-    needs: [call-workflow-version-bump]
+    needs: [call-workflow-unit-tests, call-workflow-integration-tests]
     uses: mdpadberg/multi-cf/.github/workflows/create-release.yml@main 
     with:
       release-version: ${GITHUB_REF#refs/*/}

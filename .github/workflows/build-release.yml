@@ -48,6 +48,11 @@ jobs:
       uses: Swatinem/rust-cache@v2
       with:
         shared-key: ${{ matrix.os }}-${{ matrix.rust-target }}
+    - name: Version bump
+      shell: bash
+      run: |
+        cargo install cargo-edit
+        cargo set-version ${{ inputs.release-version }}
     - name: Build
       shell: bash
       run: cargo build --release --target ${{ matrix.rust-target }}
