@@ -13,17 +13,15 @@ jobs:
       token: ${{ secrets.GITHUB_TOKEN }}
   call-workflow-unit-tests:
     name: run unit tests
-    needs: [call-workflow-clippy]
     uses: mdpadberg/multi-cf/.github/workflows/unit-tests.yml@main
   call-workflow-integration-tests:
     name: run integration tests
-    needs: [call-workflow-clippy]
     uses: mdpadberg/multi-cf/.github/workflows/integration-tests.yml@main   
   call-workflow-create-release:
     name: run create release
     permissions:
       contents: write
-    needs: [call-workflow-unit-tests, call-workflow-integration-tests]
+    needs: [call-workflow-clippy, call-workflow-unit-tests, call-workflow-integration-tests]
     uses: mdpadberg/multi-cf/.github/workflows/create-release.yml@main 
     with:
       release-version: ${{ github.ref_name }}
