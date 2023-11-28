@@ -44,10 +44,6 @@ jobs:
       with:
         toolchain: stable
         target: ${{ matrix.rust-target }}
-    - name: Restore cargo cache
-      uses: Swatinem/rust-cache@v2
-      with:
-        shared-key: ${{ matrix.os }}-${{ matrix.rust-target }}
     - name: Version bump
       shell: bash
       run: |

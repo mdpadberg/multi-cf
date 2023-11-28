@@ -17,9 +17,5 @@ jobs:
         with:
           toolchain: stable
           target: x86_64-unknown-linux-gnu
-      - name: Restore cargo cache
-        uses: Swatinem/rust-cache@v2
-        with:
-          shared-key: ubuntu-latest-x86_64-unknown-linux-gnu
       - name: Run integration tests
         run: docker-compose up --exit-code-from mcf --build
