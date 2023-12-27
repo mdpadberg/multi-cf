@@ -15,7 +15,7 @@ opt-level = 0
 
 [dependencies]
 clap = { version = "4.4.11", features = ["derive"] }
-clap_complete = "4.4.4"
+clap_complete = "4.4.5"
 dirs = "5.0.1"
 anyhow = "1.0.75"
 log = "0.4.20"
