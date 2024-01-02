@@ -17,7 +17,7 @@ opt-level = 0
 clap_complete = "4.4.5"
 clap = { version = "4.4.12", features = ["derive"] }
 dirs = "5.0.1"
-anyhow = "1.0.77"
+anyhow = "1.0.79"
 log = "0.4.20"
 env_logger = "0.10.1"
 prettytable-rs = "0.10.0"
