@@ -19,7 +19,7 @@ dirs = "5.0.1"
 serde = { version = "1.0.200", features = ["derive"] }
 serde_yaml = "0.9.34"
 tokio = { version = "1.37.0", features = ["full"] }
-strum = { version = "0.26.2", features = ["derive"] }
+strum = { version = "0.27.0", features = ["derive"] }
 
 [dev-dependencies]
 tempfile = "3.10.1"
