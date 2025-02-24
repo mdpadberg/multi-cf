@@ -15,7 +15,7 @@ opt-level = 0
 
 [dependencies]
 anyhow = "1.0.82"
-dirs = "5.0.1"
+dirs = "6.0.0"
 serde = { version = "1.0.200", features = ["derive"] }
 serde_yaml = "0.9.34"
 tokio = { version = "1.37.0", features = ["full"] }
