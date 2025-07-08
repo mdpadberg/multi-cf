@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.15-labs
+# syntax=docker/dockerfile:1.17-labs
 
 # The above line is so we can use can use heredocs in Dockerfiles. No more && and \!
 # https://www.docker.com/blog/introduction-to-heredocs-in-dockerfiles/
