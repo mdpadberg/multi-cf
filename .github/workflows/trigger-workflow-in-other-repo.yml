@@ -24,7 +24,7 @@ jobs:
     name: run trigger workflow in other repo
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/github-script@v7
+    - uses: actions/github-script@v8
       with:
         github-token: ${{ secrets.pat-token }}
         script: |
