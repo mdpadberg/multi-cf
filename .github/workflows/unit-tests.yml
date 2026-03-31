@@ -24,7 +24,7 @@ jobs:
           git config --global core.autocrlf false
         fi
     - name: Checkout project
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
     - name: Install Rust with cargo
       uses: dtolnay/rust-toolchain@stable
       with:
